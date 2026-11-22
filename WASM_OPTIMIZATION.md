@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document describes the WASM binary size optimization strategy for the Healthy-Stellar contracts repository. Soroban contracts are charged storage fees proportional to their on-chain footprint, making binary size optimization critical for cost efficiency.
+This document describes the WASM binary size optimization strategy for the Iwosan contracts repository. Soroban contracts are charged storage fees proportional to their on-chain footprint, making binary size optimization critical for cost efficiency.
 
 ## Size Limit
 

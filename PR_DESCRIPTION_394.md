@@ -2,7 +2,7 @@
 
 ## Summary
 
-This PR implements a comprehensive CI/CD pipeline using GitHub Actions to automate testing, building, deployment, and security auditing for the Healthy-Stellar contracts repository. This addresses a critical gap in the development workflow where all testing and deployment was previously manual.
+This PR implements a comprehensive CI/CD pipeline using GitHub Actions to automate testing, building, deployment, and security auditing for the Iwosan contracts repository. This addresses a critical gap in the development workflow where all testing and deployment was previously manual.
 
 ## Changes
 
@@ -402,4 +402,4 @@ Closes #394
 
 ---
 
-**This PR establishes a production-ready CI/CD pipeline that ensures code quality, automates deployments, and maintains security for the Healthy-Stellar healthcare contracts.**
+**This PR establishes a production-ready CI/CD pipeline that ensures code quality, automates deployments, and maintains security for the Iwosan healthcare contracts.**

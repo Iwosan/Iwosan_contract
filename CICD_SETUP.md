@@ -1,6 +1,6 @@
 # CI/CD Setup Guide
 
-This guide walks you through setting up the complete CI/CD pipeline for the Healthy-Stellar contracts repository.
+This guide walks you through setting up the complete CI/CD pipeline for the Iwosan contracts repository.
 
 ## Prerequisites
 

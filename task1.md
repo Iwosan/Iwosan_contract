@@ -1,6 +1,6 @@
 #407 Write contract upgrade guide covering schema migration and governance workflow
 Repo Avatar
-Healthy-Stellar/contracts
+Iwosan/contracts
 Summary
 Upgrading a live Soroban contract requires multi-sig approval, schema compatibility checks, and coordination. There is no documentation walking operators through this process.
 
@@ -20,7 +20,7 @@ Acceptance Criteria
 40 matches
 #408 Add performance benchmarks and gas cost documentation for contract operations
 Repo Avatar
-Healthy-Stellar/contracts
+Iwosan/contracts
 Summary
 There are no documented baseline performance metrics for any contract operation. Developers and integrators have no reference for expected gas costs, latency, or resource consumption, making it difficult to optimize or budget for transactions.
 
@@ -40,7 +40,7 @@ Acceptance Criteria
 40 matches
 #409 Implement on-chain cost metering per contract operation
 Repo Avatar
-Healthy-Stellar/contracts
+Iwosan/contracts
 Summary
 There is currently no per-operation cost tracking within contracts. In a healthcare system where multiple parties are billed for contract interactions (insurer, provider, patient), transparent on-chain cost accounting is important.
 
@@ -57,7 +57,7 @@ Acceptance Criteria
 
 #410 Add structured logging framework for contract debugging separate from audit events
 Repo Avatar
-Healthy-Stellar/contracts
+Iwosan/contracts
 Summary
 Contract events serve as the immutable audit trail, but they are not well-suited for debugging. A structured logging layer that is active in test/dev environments (and stripped from production WASM) would accelerate debugging significantly.
 
