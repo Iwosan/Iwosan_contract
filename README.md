@@ -23,6 +23,23 @@ Payments are held in a Soroban escrow contract and released to the seller only w
 
 The existing clinical modules (records, appointments, pharmacy, lab, telemedicine) remain and support the marketplace.
 
+### Stellar roadmap
+
+Planned contracts (full plan in [docs/STELLAR_ROADMAP.md](docs/STELLAR_ROADMAP.md)):
+
+| Contract / change | Purpose | Issue |
+|---|---|---|
+| `drug-batch-registry` | Counterfeit-proof drug batch custody chain | [#2](https://github.com/Iwosan/Iwosan_contract/issues/2) |
+| Batch recall | Recalled batches can't change hands | [#3](https://github.com/Iwosan/Iwosan_contract/issues/3) |
+| `credential-issuer-registry` | Licences issued on-chain by regulators and professional bodies | [#4](https://github.com/Iwosan/Iwosan_contract/issues/4) |
+| `iwosan-marketplace` credential checks | Replace the admin verify flag with issuer credentials | [#5](https://github.com/Iwosan/Iwosan_contract/issues/5) |
+| `iwosan-marketplace` rental deposits | Refundable deposit held in escrow | [#11](https://github.com/Iwosan/Iwosan_contract/issues/11) |
+| `iwosan-marketplace` rent-to-own | Rental payments count toward ownership | [#6](https://github.com/Iwosan/Iwosan_contract/issues/6) |
+| `health-savings-pool` | Ajo/esusu community health savings | [#7](https://github.com/Iwosan/Iwosan_contract/issues/7) |
+| `micro-insurance-pool` | Small premiums; claims paid to verified providers | [#8](https://github.com/Iwosan/Iwosan_contract/issues/8) |
+| `treatment-crowdfund` | Donations paid only to the hospital | [#9](https://github.com/Iwosan/Iwosan_contract/issues/9) |
+| `medical-voucher` | Funds spendable only at verified sellers | [#10](https://github.com/Iwosan/Iwosan_contract/issues/10) |
+
 ## Architecture
 
 ### Smart Contracts
