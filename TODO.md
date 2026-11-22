@@ -1,4 +1,4 @@
-#92 Add record update function with version history (Healthy-Stellar/contracts)
+#92 Add record update function with version history (Iwosan/contracts)
 
 **Status**: In progress
 

@@ -1,22 +1,27 @@
-# contracts 
-# Decentralized Healthcare System on Stellar
+# Iwosan Contracts
 
-A blockchain-based healthcare management system built with Soroban smart contracts on the Stellar network, enabling secure, transparent, and efficient healthcare data management.
+Soroban smart contracts for Iwosan.
 
-## Overview
+**Iwosan** (Yoruba: *healing*) is a healthcare marketplace on the Stellar network. It lets hospitals, clinics, pharmacies, traditional medicine practitioners and patients:
 
-This decentralized healthcare system leverages Stellar's Soroban smart contracts to provide a trustless, HIPAA-compliant solution for managing electronic health records (EHR), patient data, medical appointments, and healthcare provider interactions. The system ensures data privacy, interoperability, and patient sovereignty over personal health information.
+- **Buy, sell and rent medical equipment**: wheelchairs, oxygen concentrators, hospital beds, diagnostic devices.
+- **Buy orthodox and native drugs**: pharmaceutical drugs and traditional/herbal medicine, each listed with its regulatory number (e.g. NAFDAC).
+- **Hire medical personnel**: nurses, doctors, lab scientists and caregivers, by the day or shift, with licences verified.
 
-## Key Features
+Payments are held in a Soroban escrow contract and released to the seller only when the buyer confirms delivery or service. Disputes are resolved by the Iwosan verification desk.
 
-- **Patient Data Sovereignty**: Patients maintain complete control over their health records with cryptographic access management
-- **Secure Health Records**: Encrypted storage of medical records with granular permission controls
-- **Provider Verification**: Blockchain-based credential verification for healthcare providers
-- **Appointment Management**: Decentralized scheduling and management of medical appointments
-- **Medical History Tracking**: Immutable audit trail of all medical interactions and treatments
-- **Insurance Integration**: Smart contract-based claims processing and verification
-- **Prescription Management**: Secure digital prescription issuance and tracking
-- **Consent Management**: Patient-controlled data sharing with healthcare providers and institutions
+### Gaps Iwosan addresses
+
+| Problem | How Iwosan handles it |
+|---|---|
+| Counterfeit and unregistered drugs | Drug listings must be verified (regulatory number checked) before they can be ordered |
+| Traditional medicine has no trusted channel | Native drugs are a first-class category, with the same verification as orthodox drugs |
+| Expensive equipment sits idle or is out of reach | Equipment can be rented by the day as well as sold |
+| Hard to find vetted medical staff quickly | Personnel listings are hire-only and need a verified practising licence |
+| Paying strangers upfront is risky | Stellar escrow: funds release only on confirmation, refund otherwise |
+| Slow, costly cross-border payment | Settlement in USDC/XLM on Stellar in seconds, at low fees |
+
+The existing clinical modules (records, appointments, pharmacy, lab, telemedicine) remain and support the marketplace.
 
 ## Architecture
 
@@ -26,6 +31,7 @@ The system is organised as a Cargo workspace. Each contract lives in its own cra
 
 | Crate | Description |
 |---|---|
+| `contracts/iwosan-marketplace` | Escrow marketplace: equipment sale/rental, orthodox and native drugs, medical personnel hire |
 | `contracts/patient-registry` | Patient identity and profile management |
 | `contracts/provider-registry` | Healthcare provider credentials and verification |
 | `contracts/health-records` | Electronic health record storage and access control |
@@ -108,13 +114,13 @@ cargo install --locked stellar-cli
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/Healthy-Stellar/contracts.git
+git clone https://github.com/Iwosan/contracts.git
 cd contracts
 ```
 
 Or via SSH:
 ```bash
-git clone git@github.com:Healthy-Stellar/contracts.git
+git clone git@github.com:Iwosan/contracts.git
 cd contracts
 ```
 
@@ -373,28 +379,28 @@ Run integration tests:
 cargo test --test integration_tests
 ```
 
-## Handsoff notes
+## Iwosan notes
 
-<!-- handsoff-issue-850 -->
+<!-- iwosan-issue-850 -->
 - #850: [allergy-tracking] Documented patient-deregistration deletion does not exist
 
-<!-- handsoff-issue-878 -->
+<!-- iwosan-issue-878 -->
 - #878: [medical-device-tracking] Unchecked u64 multiply/add when computing maintenance schedule
 
-<!-- handsoff-issue-890 -->
+<!-- iwosan-issue-890 -->
 - #890: [patient-registry] register_institution has no admin gate, undermining doctor verification
 
-<!-- handsoff-issue-860 -->
+<!-- iwosan-issue-860 -->
 - #860: [hai-tracking] record_patient_days lets any caller modify any case's denominator data
 
-<!-- handsoff-issue-939 -->
+<!-- iwosan-issue-939 -->
 - #939: [medical-claims] Still fails to compile on main — register_reviewer use-after-move (#868) is back
 
-<!-- handsoff-issue-940 -->
+<!-- iwosan-issue-940 -->
 - #940: [health-records] Test suite does not compile — 97 errors since nonce parameters were added (#776)
 
-<!-- handsoff-issue-941 -->
+<!-- iwosan-issue-941 -->
 - #941: [patient-registry] Test suite does not compile — 95 errors from nonce parameters added in #776
 
-<!-- handsoff-issue-988 -->
+<!-- iwosan-issue-988 -->
 - #988: [healthcare-credentialing] verify_credential counts repeated verifications of one credential type — a single verifier can push a case to committee review

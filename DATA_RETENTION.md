@@ -1,6 +1,6 @@
 # On-Chain Data Retention Policies
 
-This document records per-contract storage retention decisions for the Healthy-Stellar healthcare contract workspace. Constants are defined in `contracts/ttl-config/src/lib.rs` and summarized in `TTL_POLICY.md`.
+This document records per-contract storage retention decisions for the Iwosan healthcare contract workspace. Constants are defined in `contracts/ttl-config/src/lib.rs` and summarized in `TTL_POLICY.md`.
 
 ## Retention Classes
 

@@ -1,6 +1,6 @@
 # Deployment Guide
 
-This repository contains Healthy Stellar contracts and deployment tooling for both Testnet and Mainnet.
+This repository contains Iwosan contracts and deployment tooling for both Testnet and Mainnet.
 
 ## Supported networks
 

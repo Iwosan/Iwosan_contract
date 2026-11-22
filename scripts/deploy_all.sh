@@ -20,7 +20,7 @@ usage() {
     cat <<EOF
 Usage: $(basename "$0") [options]
 
-Deploy all Healthy Stellar contracts in dependency order and write
+Deploy all Iwosan contracts in dependency order and write
 deployments/<network>.json.
 
 Options:

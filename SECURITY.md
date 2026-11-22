@@ -15,10 +15,10 @@
 To report a security issue, e-mail the maintainers at:
 
 ```
-security@healthy-stellar.dev
+security@iwosan.dev
 ```
 
-Or use [GitHub's private vulnerability reporting](https://github.com/Healthy-Stellar/contracts/security/advisories/new) feature.
+Or use [GitHub's private vulnerability reporting](https://github.com/Iwosan/contracts/security/advisories/new) feature.
 
 Include as much of the following information as possible to help us triage and resolve the issue quickly:
 
