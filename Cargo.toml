@@ -46,6 +46,7 @@ members = [
   "contracts/liquidity-pool",
   "contracts/ttl-config",
   "contracts/nft-badges",
+  "contracts/iwosan-marketplace",
 ]
 exclude = ["contracts/patient-registry/benches"]
 
