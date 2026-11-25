@@ -54,7 +54,6 @@ name = "allergy-tracking"
 version = "0.1.0"
 dependencies = [
  "soroban-sdk",
- "ttl-config",
 ]
 
 [[package]]
@@ -328,8 +327,6 @@ dependencies = [
 name = "clinical-guideline"
 version = "0.1.0"
 dependencies = [
- "provider-registry",
- "shared",
  "soroban-sdk",
 ]
 
@@ -371,6 +368,13 @@ dependencies = [
  "serde",
  "serde_derive",
  "serde_json",
+]
+
+[[package]]
+name = "credential-issuer-registry"
+version = "0.1.0"
+dependencies = [
+ "soroban-sdk",
 ]
 
 [[package]]
@@ -590,6 +594,13 @@ name = "downcast-rs"
 version = "1.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "75b325c5dbd37f80359721ad39aca5a29fb04c89279657cffdda8736d0c0b9d2"
+
+[[package]]
+name = "drug-batch-registry"
+version = "0.1.0"
+dependencies = [
+ "soroban-sdk",
+]
 
 [[package]]
 name = "dtor"
@@ -994,6 +1005,10 @@ name = "imaging-radiology"
 version = "0.1.0"
 dependencies = [
  "Contracts",
+ "access-control",
+ "healthcare-credentialing",
+ "hospital-registry",
+ "provider-registry",
  "shared",
  "soroban-sdk",
 ]
@@ -1057,6 +1072,13 @@ name = "itoa"
 version = "1.0.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "92ecc6618181def0457392ccd0ee51198e065e016d1d527a7ac1b6dc7c1f09d2"
+
+[[package]]
+name = "iwosan-marketplace"
+version = "0.1.0"
+dependencies = [
+ "soroban-sdk",
+]
 
 [[package]]
 name = "js-sys"
@@ -2578,7 +2600,6 @@ name = "zk-eligibility-verifier"
 version = "0.0.0"
 dependencies = [
  "soroban-sdk",
- "zk-eligibility",
 ]
 
 [[package]]
