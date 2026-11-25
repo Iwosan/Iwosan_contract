@@ -513,4 +513,4 @@ After completing this setup:
 2. **Trigger a manual testnet deployment** to verify `STELLAR_SECRET_KEY` is working
 3. **Run a dry-run TTL extension** to verify `TESTNET_DEPLOYER_IDENTITY` is working
 4. **Review the security audit** results
-5. **Train team members** on the CI/CD process and point them to the Secrets Reference table first
+5. **Train team members** on the CI/CD process and point them to the Secrets Reference table first.
