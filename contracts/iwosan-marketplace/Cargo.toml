@@ -17,4 +17,5 @@ testutils = ["soroban-sdk/testutils"]
 soroban-sdk = { workspace = true }
 
 [dev-dependencies]
+credential-issuer-registry = { path = "../credential-issuer-registry" }
 soroban-sdk = { workspace = true, features = ["testutils"] }
