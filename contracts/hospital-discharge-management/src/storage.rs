@@ -111,7 +111,9 @@ pub fn set_admin(env: &Env, admin: &Address) {
 }
 
 pub fn set_hospital_registry(env: &Env, registry: &Address) {
-    env.storage().instance().set(&DataKey::HospitalRegistry, registry);
+    env.storage()
+        .instance()
+        .set(&DataKey::HospitalRegistry, registry);
 }
 
 pub fn get_hospital_registry(env: &Env) -> Result<Address, Error> {
@@ -122,7 +124,9 @@ pub fn get_hospital_registry(env: &Env) -> Result<Address, Error> {
 }
 
 pub fn set_provider_registry(env: &Env, registry: &Address) {
-    env.storage().instance().set(&DataKey::ProviderRegistry, registry);
+    env.storage()
+        .instance()
+        .set(&DataKey::ProviderRegistry, registry);
 }
 
 pub fn get_provider_registry(env: &Env) -> Result<Address, Error> {

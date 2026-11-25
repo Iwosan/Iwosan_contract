@@ -478,13 +478,8 @@ fn test_initialize_then_discharge_planning() {
     assert_eq!(error, Error::AlreadyInitialized);
 
     // Verify the initial setup remains usable after a rejected second initialization.
-    let plan_id = client.initiate_discharge_planning(
-        &admin,
-        &patient_id,
-        &hospital_id,
-        &1000u64,
-        &2000u64,
-    );
+    let plan_id =
+        client.initiate_discharge_planning(&admin, &patient_id, &hospital_id, &1000u64, &2000u64);
 
     assert_eq!(plan_id, 1);
     let plan = client.get_discharge_plan(&plan_id);
@@ -532,23 +527,15 @@ fn test_complete_discharge_missing_readiness_or_orders_fails() {
         client.initiate_discharge_planning(&admin, &patient_id, &hospital_id, &1000u64, &2000u64);
 
     // 1. Try to complete directly from Planning state (should fail)
-    let result1 = client.try_complete_discharge(
-        &admin,
-        &plan_id,
-        &1950u64,
-        &String::from_str(&env, "Home"),
-    );
+    let result1 =
+        client.try_complete_discharge(&admin, &plan_id, &1950u64, &String::from_str(&env, "Home"));
     assert!(result1.is_err());
 
     // 2. Assess readiness (now in ReadinessAssessed) and try to complete (should fail)
     let notes = String::from_str(&env, "Patient stable");
     client.assess_discharge_readiness(&admin, &plan_id, &85u32, &80u32, &90u32, &notes);
-    let result2 = client.try_complete_discharge(
-        &admin,
-        &plan_id,
-        &1950u64,
-        &String::from_str(&env, "Home"),
-    );
+    let result2 =
+        client.try_complete_discharge(&admin, &plan_id, &1950u64, &String::from_str(&env, "Home"));
     assert!(result2.is_err());
 }
 
@@ -572,12 +559,8 @@ fn test_complete_discharge_twice_fails() {
     client.complete_discharge(&admin, &plan_id, &1950u64, &String::from_str(&env, "Home"));
 
     // Attempt to complete a second time (should fail)
-    let result = client.try_complete_discharge(
-        &admin,
-        &plan_id,
-        &1960u64,
-        &String::from_str(&env, "Home"),
-    );
+    let result =
+        client.try_complete_discharge(&admin, &plan_id, &1960u64, &String::from_str(&env, "Home"));
     assert!(result.is_err());
 }
 
@@ -649,10 +632,17 @@ fn test_modify_completed_or_cancelled_plan_fails() {
     client.complete_discharge(&admin, &plan_id, &1950u64, &String::from_str(&env, "Home"));
 
     // Attempting to assess readiness or create orders on a completed plan should fail
-    let result_assess = client.try_assess_discharge_readiness(&admin, &plan_id, &85u32, &80u32, &90u32, &notes);
+    let result_assess =
+        client.try_assess_discharge_readiness(&admin, &plan_id, &85u32, &80u32, &90u32, &notes);
     assert!(result_assess.is_err());
 
-    let result_orders = client.try_create_discharge_orders(&admin, &plan_id, &medications, &instructions, &restrictions);
+    let result_orders = client.try_create_discharge_orders(
+        &admin,
+        &plan_id,
+        &medications,
+        &instructions,
+        &restrictions,
+    );
     assert!(result_orders.is_err());
 }
 
@@ -661,11 +651,13 @@ fn test_assess_discharge_readiness_unauthorized() {
     let (env, admin, _patient, patient_id, hospital_id) = create_test_env();
     let client = create_client(&env, &admin);
 
-    let plan_id = client.initiate_discharge_planning(&admin, &patient_id, &hospital_id, &1000u64, &2000u64);
+    let plan_id =
+        client.initiate_discharge_planning(&admin, &patient_id, &hospital_id, &1000u64, &2000u64);
 
     let stranger = Address::generate(&env);
     let notes = String::from_str(&env, "Patient stable");
-    let result = client.try_assess_discharge_readiness(&stranger, &plan_id, &85u32, &80u32, &90u32, &notes);
+    let result =
+        client.try_assess_discharge_readiness(&stranger, &plan_id, &85u32, &80u32, &90u32, &notes);
     assert_eq!(result.unwrap_err().unwrap(), Error::Unauthorized);
 }
 
@@ -674,7 +666,8 @@ fn test_schedule_followup_appointments_unauthorized() {
     let (env, admin, _patient, patient_id, hospital_id) = create_test_env();
     let client = create_client(&env, &admin);
 
-    let plan_id = client.initiate_discharge_planning(&admin, &patient_id, &hospital_id, &1000u64, &2000u64);
+    let plan_id =
+        client.initiate_discharge_planning(&admin, &patient_id, &hospital_id, &1000u64, &2000u64);
 
     let stranger = Address::generate(&env);
     let appointments = Vec::new(&env);
@@ -687,11 +680,13 @@ fn test_provide_discharge_education_unauthorized() {
     let (env, admin, _patient, patient_id, hospital_id) = create_test_env();
     let client = create_client(&env, &admin);
 
-    let plan_id = client.initiate_discharge_planning(&admin, &patient_id, &hospital_id, &1000u64, &2000u64);
+    let plan_id =
+        client.initiate_discharge_planning(&admin, &patient_id, &hospital_id, &1000u64, &2000u64);
 
     let stranger = Address::generate(&env);
     let topics = Vec::new(&env);
     let materials = Vec::new(&env);
-    let result = client.try_provide_discharge_education(&stranger, &plan_id, &topics, &materials, &80u32);
+    let result =
+        client.try_provide_discharge_education(&stranger, &plan_id, &topics, &materials, &80u32);
     assert_eq!(result.unwrap_err().unwrap(), Error::Unauthorized);
 }

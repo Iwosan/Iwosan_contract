@@ -12,11 +12,13 @@
 
 pub mod interface;
 
-use soroban_sdk::{contract, contractclient, contracterror, contractimpl, contracttype, Address, Env};
+use soroban_sdk::{
+    contract, contractclient, contracterror, contractimpl, contracttype, Address, Env,
+};
 
 pub use interface::{
-    verify_eligibility_proof, PlaceholderZkProofVerifier, PublicInputs, RUST_INTERFACE_VERSION,
-    ZKProofVerifier,
+    verify_eligibility_proof, PlaceholderZkProofVerifier, PublicInputs, ZKProofVerifier,
+    RUST_INTERFACE_VERSION,
 };
 
 /// Minimal client for the `zk-eligibility` contract.
@@ -54,11 +56,7 @@ pub struct ZkEligibilityVerifier;
 impl ZkEligibilityVerifier {
     /// Runs atomically as part of contract creation, so the deployer binds the
     /// admin and verifier addresses and no front-running `initialize` call is possible.
-    pub fn __constructor(
-        env: Env,
-        admin: Address,
-        zk_eligibility_contract: Address,
-    ) {
+    pub fn __constructor(env: Env, admin: Address, zk_eligibility_contract: Address) {
         env.storage().persistent().set(&DataKey::Admin, &admin);
         env.storage()
             .persistent()

@@ -40,7 +40,10 @@ fn register_device_helper(
         &1690000000u64,
         &None,
         &dummy_hash(env),
-        &DeviceExtras { warranty_expiration_date: None, maintenance_interval_days: None },
+        &DeviceExtras {
+            warranty_expiration_date: None,
+            maintenance_interval_days: None,
+        },
     )
 }
 
@@ -78,7 +81,10 @@ fn test_register_device_with_expiration() {
         &1690000000u64,
         &Some(1800000000u64),
         &dummy_hash(&env),
-        &DeviceExtras { warranty_expiration_date: None, maintenance_interval_days: None },
+        &DeviceExtras {
+            warranty_expiration_date: None,
+            maintenance_interval_days: None,
+        },
     );
     assert_eq!(id, 1);
 }
@@ -372,7 +378,8 @@ fn test_notify_affected_patients_recall_not_found() {
 
     let client = setup_client(&env);
 
-    let res = client.try_notify_affected_patients(&Address::generate(&env), &999u64, &1750100000u64);
+    let res =
+        client.try_notify_affected_patients(&Address::generate(&env), &999u64, &1750100000u64);
     assert!(res.is_err());
 }
 
@@ -1071,7 +1078,10 @@ fn test_unallowlisted_manufacturer_cannot_register_device() {
         &1690000000u64,
         &None,
         &dummy_hash(&env),
-        &DeviceExtras { warranty_expiration_date: None, maintenance_interval_days: None },
+        &DeviceExtras {
+            warranty_expiration_date: None,
+            maintenance_interval_days: None,
+        },
     );
     assert_eq!(res.unwrap_err().unwrap(), Error::ManufacturerNotAuthorized);
 }
@@ -1101,7 +1111,10 @@ fn test_duplicate_udi_rejected() {
         &1690000000u64,
         &None,
         &dummy_hash(&env),
-        &DeviceExtras { warranty_expiration_date: None, maintenance_interval_days: None },
+        &DeviceExtras {
+            warranty_expiration_date: None,
+            maintenance_interval_days: None,
+        },
     );
     assert_eq!(id1, 1);
 
@@ -1116,7 +1129,10 @@ fn test_duplicate_udi_rejected() {
         &1690000000u64,
         &None,
         &dummy_hash(&env),
-        &DeviceExtras { warranty_expiration_date: None, maintenance_interval_days: None },
+        &DeviceExtras {
+            warranty_expiration_date: None,
+            maintenance_interval_days: None,
+        },
     );
     assert_eq!(res.unwrap_err().unwrap(), Error::DuplicateUdi);
 }
@@ -1145,7 +1161,10 @@ fn test_implant_device_resolves_udi_correctly() {
         &1690000000u64,
         &None,
         &dummy_hash(&env),
-        &DeviceExtras { warranty_expiration_date: None, maintenance_interval_days: None },
+        &DeviceExtras {
+            warranty_expiration_date: None,
+            maintenance_interval_days: None,
+        },
     );
 
     let implant_id = client.implant_device(
@@ -1221,4 +1240,3 @@ fn test_regulator_allowlist_management() {
     client.revoke_manufacturer(&regulator, &manufacturer);
     assert!(!client.is_manufacturer_allowlisted(&manufacturer));
 }
-

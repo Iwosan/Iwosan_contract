@@ -37,24 +37,24 @@ mod test;
 #[derive(Copy, Clone, Debug, Eq, PartialEq, PartialOrd, Ord)]
 #[repr(u32)]
 pub enum Error {
-    NotInitialized     = 2,
-    InvalidThreshold   = 3,
-    NotASigner         = 4,
-    ProposalExists     = 5,
-    ProposalNotFound   = 6,
-    AlreadyExecuted    = 7,
-    Expired            = 8,
-    AlreadyVoted       = 9,
+    NotInitialized = 2,
+    InvalidThreshold = 3,
+    NotASigner = 4,
+    ProposalExists = 5,
+    ProposalNotFound = 6,
+    AlreadyExecuted = 7,
+    Expired = 8,
+    AlreadyVoted = 9,
     /// Quorum was not reached (too few non-abstaining votes).
-    QuorumNotMet       = 10,
+    QuorumNotMet = 10,
     /// Proposal was already finalized (executed or failed).
-    AlreadyFinalized   = 11,
+    AlreadyFinalized = 11,
     /// The address is already a signer.
-    AlreadySigner      = 12,
+    AlreadySigner = 12,
     /// Removing this signer would make the threshold unreachable.
-    ThresholdBreached  = 13,
+    ThresholdBreached = 13,
     /// Removing this signer would make the quorum minimum unreachable.
-    QuorumBreached     = 14,
+    QuorumBreached = 14,
 }
 
 #[contracttype]
@@ -182,11 +182,7 @@ impl MultisigGovernance {
         //   • Pending + TTL elapsed       → allow; overwrite the stale entry
         //   • Executed / Failed           → allow; the slot is logically free
         //   • No entry                   → allow
-        if let Some(existing) = env
-            .storage()
-            .persistent()
-            .get::<_, Proposal>(&key)
-        {
+        if let Some(existing) = env.storage().persistent().get::<_, Proposal>(&key) {
             if existing.status == ProposalStatus::Pending {
                 let ttl: u64 = env
                     .storage()
@@ -261,11 +257,7 @@ impl MultisigGovernance {
 
         for id in ids.iter() {
             let key = DataKey::Proposal(id.clone());
-            if let Some(proposal) = env
-                .storage()
-                .persistent()
-                .get::<_, Proposal>(&key)
-            {
+            if let Some(proposal) = env.storage().persistent().get::<_, Proposal>(&key) {
                 if now > proposal.proposed_at + ttl {
                     env.storage().persistent().remove(&key);
                     removed += 1;
@@ -280,8 +272,7 @@ impl MultisigGovernance {
             .persistent()
             .set(&DataKey::ProposalIds, &remaining);
 
-        env.events()
-            .publish((symbol_short!("cleanup"),), removed);
+        env.events().publish((symbol_short!("cleanup"),), removed);
         Ok(removed)
     }
 
@@ -447,8 +438,10 @@ impl MultisigGovernance {
 
         proposal.status = ProposalStatus::Failed;
         env.storage().persistent().set(&key, &proposal);
-        env.events()
-            .publish((symbol_short!("expired"), action_id), env.ledger().timestamp());
+        env.events().publish(
+            (symbol_short!("expired"), action_id),
+            env.ledger().timestamp(),
+        );
         Ok(())
     }
 
@@ -625,11 +618,11 @@ impl MultisigGovernance {
 
             env.storage().persistent().set(&DataKey::Signers, &signers);
             proposal.status = ProposalStatus::Executed;
-            env.storage()
-                .persistent()
-                .remove(&DataKey::SignerProposal);
-            env.events()
-                .publish((symbol_short!("sg_exec"), proposal.kind.clone()), proposal.target.clone());
+            env.storage().persistent().remove(&DataKey::SignerProposal);
+            env.events().publish(
+                (symbol_short!("sg_exec"), proposal.kind.clone()),
+                proposal.target.clone(),
+            );
         } else {
             env.storage()
                 .persistent()

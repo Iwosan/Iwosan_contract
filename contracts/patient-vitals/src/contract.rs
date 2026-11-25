@@ -29,10 +29,10 @@ impl PatientVitalsContract {
         // MonitoringParameters for this patient, or a registered monitoring device.
         let is_patient = recorder == patient_id;
         let is_provider = Self::is_authorized_provider(&env, &patient_id, &recorder);
-        let is_device = env
-            .storage()
-            .persistent()
-            .has(&DataKey::DeviceAddress(patient_id.clone(), recorder.clone()));
+        let is_device = env.storage().persistent().has(&DataKey::DeviceAddress(
+            patient_id.clone(),
+            recorder.clone(),
+        ));
 
         if !is_patient && !is_provider && !is_device {
             return Err(Error::Unauthorized);
@@ -83,14 +83,14 @@ impl PatientVitalsContract {
 
         // Maintain per-patient window index for queries and deregistration
         let win_key = DataKey::PatientWindows(patient_id.clone());
-        let mut win_index: WindowIndex = env
-            .storage()
-            .persistent()
-            .get(&win_key)
-            .unwrap_or(WindowIndex {
-                raw_indices: Vec::new(env),
-                agg_indices: Vec::new(env),
-            });
+        let mut win_index: WindowIndex =
+            env.storage()
+                .persistent()
+                .get(&win_key)
+                .unwrap_or(WindowIndex {
+                    raw_indices: Vec::new(env),
+                    agg_indices: Vec::new(env),
+                });
 
         let mut raw_seen = false;
         for i in 0..win_index.raw_indices.len() {
@@ -205,10 +205,10 @@ impl PatientVitalsContract {
 
         // Authorization: require auth from either the device or the patient
         // Primary path: registered device submits on its own authority
-        let is_device = env
-            .storage()
-            .persistent()
-            .has(&DataKey::DeviceAddress(patient_id.clone(), device_address.clone()));
+        let is_device = env.storage().persistent().has(&DataKey::DeviceAddress(
+            patient_id.clone(),
+            device_address.clone(),
+        ));
 
         if is_device {
             device_address.require_auth();
@@ -309,19 +309,13 @@ impl PatientVitalsContract {
 
         // Authorization: requester must be the patient or an authorized provider
         // (i.e., holds a MonitoringParameters entry for any vital type of this patient).
-        if requester != patient_id
-            && !Self::is_authorized_provider(&env, &patient_id, &requester)
-        {
+        if requester != patient_id && !Self::is_authorized_provider(&env, &patient_id, &requester) {
             return Err(Error::Unauthorized);
         }
 
         let mut trends = Vec::new(&env);
         let win_key = DataKey::PatientWindows(patient_id.clone());
-        if let Some(win_index) = env
-            .storage()
-            .persistent()
-            .get::<_, WindowIndex>(&win_key)
-        {
+        if let Some(win_index) = env.storage().persistent().get::<_, WindowIndex>(&win_key) {
             for i in 0..win_index.raw_indices.len() {
                 if let Some(idx) = win_index.raw_indices.get(i) {
                     let win_start = idx * RAW_WINDOW_SECONDS;
@@ -334,7 +328,9 @@ impl PatientVitalsContract {
                             .get::<_, Vec<VitalReading>>(&raw_key)
                         {
                             for record in bucket.iter() {
-                                if record.measurement_time >= start_date && record.measurement_time <= end_date {
+                                if record.measurement_time >= start_date
+                                    && record.measurement_time <= end_date
+                                {
                                     trends.push_back(record);
                                 }
                             }
@@ -346,7 +342,8 @@ impl PatientVitalsContract {
             let key = DataKey::VitalsHistory(patient_id.clone());
             if let Some(history) = env.storage().persistent().get::<_, Vec<VitalReading>>(&key) {
                 for record in history.iter() {
-                    if record.measurement_time >= start_date && record.measurement_time <= end_date {
+                    if record.measurement_time >= start_date && record.measurement_time <= end_date
+                    {
                         trends.push_back(record);
                     }
                 }
@@ -366,9 +363,7 @@ impl PatientVitalsContract {
         requester.require_auth();
 
         // Authorization: requester must be the patient or an authorized provider.
-        if requester != patient_id
-            && !Self::is_authorized_provider(&env, &patient_id, &requester)
-        {
+        if requester != patient_id && !Self::is_authorized_provider(&env, &patient_id, &requester) {
             return Err(Error::Unauthorized);
         }
 
@@ -378,11 +373,7 @@ impl PatientVitalsContract {
         let mut min_val = u32::MAX;
 
         let win_key = DataKey::PatientWindows(patient_id.clone());
-        if let Some(win_index) = env
-            .storage()
-            .persistent()
-            .get::<_, WindowIndex>(&win_key)
-        {
+        if let Some(win_index) = env.storage().persistent().get::<_, WindowIndex>(&win_key) {
             for i in 0..win_index.raw_indices.len() {
                 if let Some(idx) = win_index.raw_indices.get(i) {
                     let win_end = (idx + 1) * RAW_WINDOW_SECONDS;
@@ -395,7 +386,9 @@ impl PatientVitalsContract {
                         {
                             for record in bucket.iter() {
                                 if record.measurement_time >= period {
-                                    if let Some(val) = Self::extract_vital_value(&env, &record.vitals, &vital_type) {
+                                    if let Some(val) =
+                                        Self::extract_vital_value(&env, &record.vitals, &vital_type)
+                                    {
                                         valid_count += 1;
                                         sum += val;
                                         if val > max_val {
@@ -416,7 +409,9 @@ impl PatientVitalsContract {
             if let Some(history) = env.storage().persistent().get::<_, Vec<VitalReading>>(&key) {
                 for record in history.iter() {
                     if record.measurement_time >= period {
-                        if let Some(val) = Self::extract_vital_value(&env, &record.vitals, &vital_type) {
+                        if let Some(val) =
+                            Self::extract_vital_value(&env, &record.vitals, &vital_type)
+                        {
                             valid_count += 1;
                             sum += val;
                             if val > max_val {
@@ -482,7 +477,12 @@ impl PatientVitalsContract {
     /// supplied vitals. For each vital type that has a MonitoringParameters entry,
     /// check the AlertThresholds and emit a deterministic VitalAlert if a threshold
     /// is breached, subject to a per-(patient, vital_type) cooldown window.
-    fn evaluate_thresholds(env: &Env, patient_id: &Address, measurement_time: u64, vitals: &VitalSigns) {
+    fn evaluate_thresholds(
+        env: &Env,
+        patient_id: &Address,
+        measurement_time: u64,
+        vitals: &VitalSigns,
+    ) {
         let vital_types = [
             Symbol::new(env, "heart_rate"),
             Symbol::new(env, "bp_systolic"),
@@ -496,8 +496,7 @@ impl PatientVitalsContract {
 
         for vt in vital_types.iter() {
             let params_key = DataKey::MonitoringParams(patient_id.clone(), vt.clone());
-            let params: Option<MonitoringParameters> =
-                env.storage().persistent().get(&params_key);
+            let params: Option<MonitoringParameters> = env.storage().persistent().get(&params_key);
             let params = match params {
                 Some(p) => p,
                 None => continue,
@@ -516,11 +515,7 @@ impl PatientVitalsContract {
 
             // Cooldown check: suppress duplicate alerts within ALERT_COOLDOWN_SECONDS.
             let cooldown_key = DataKey::LastAlertTime(patient_id.clone(), vt.clone());
-            let last_alert: u64 = env
-                .storage()
-                .persistent()
-                .get(&cooldown_key)
-                .unwrap_or(0);
+            let last_alert: u64 = env.storage().persistent().get(&cooldown_key).unwrap_or(0);
 
             if measurement_time < last_alert + ALERT_COOLDOWN_SECONDS {
                 continue; // still within cooldown window
@@ -540,7 +535,9 @@ impl PatientVitalsContract {
                 alert_time: measurement_time,
             });
             env.storage().persistent().set(&alert_key, &alerts);
-            env.storage().persistent().set(&cooldown_key, &measurement_time);
+            env.storage()
+                .persistent()
+                .set(&cooldown_key, &measurement_time);
 
             env.events().publish(
                 (symbol_short!("vt_alert"), patient_id.clone(), vt.clone()),
@@ -607,31 +604,57 @@ impl PatientVitalsContract {
 
     fn update_aggregate(env: &Env, patient_id: &Address, agg_idx: u64, ts: u64, v: &VitalSigns) {
         let key = DataKey::AggWindow(patient_id.clone(), agg_idx);
-        let mut agg: VitalsAggregate = env.storage().persistent().get(&key).unwrap_or(
-            VitalsAggregate {
-                window_start: agg_idx * AGG_WINDOW_SECONDS,
-                window_end: (agg_idx + 1) * AGG_WINDOW_SECONDS - 1,
-                count: 0,
-                min_heart_rate: None,
-                max_heart_rate: None,
-                avg_heart_rate: None,
-                min_systolic: None,
-                max_systolic: None,
-                avg_systolic: None,
-                min_oxygen_sat: None,
-                max_oxygen_sat: None,
-                avg_oxygen_sat: None,
-            },
-        );
+        let mut agg: VitalsAggregate =
+            env.storage()
+                .persistent()
+                .get(&key)
+                .unwrap_or(VitalsAggregate {
+                    window_start: agg_idx * AGG_WINDOW_SECONDS,
+                    window_end: (agg_idx + 1) * AGG_WINDOW_SECONDS - 1,
+                    count: 0,
+                    min_heart_rate: None,
+                    max_heart_rate: None,
+                    avg_heart_rate: None,
+                    min_systolic: None,
+                    max_systolic: None,
+                    avg_systolic: None,
+                    min_oxygen_sat: None,
+                    max_oxygen_sat: None,
+                    avg_oxygen_sat: None,
+                });
         let _ = ts; // window bounds already encode time
         agg.count += 1;
-        Self::merge_u32_stat(&mut agg.min_heart_rate, &mut agg.max_heart_rate, &mut agg.avg_heart_rate, v.heart_rate, agg.count);
-        Self::merge_u32_stat(&mut agg.min_systolic, &mut agg.max_systolic, &mut agg.avg_systolic, v.blood_pressure_systolic, agg.count);
-        Self::merge_u32_stat(&mut agg.min_oxygen_sat, &mut agg.max_oxygen_sat, &mut agg.avg_oxygen_sat, v.oxygen_saturation, agg.count);
+        Self::merge_u32_stat(
+            &mut agg.min_heart_rate,
+            &mut agg.max_heart_rate,
+            &mut agg.avg_heart_rate,
+            v.heart_rate,
+            agg.count,
+        );
+        Self::merge_u32_stat(
+            &mut agg.min_systolic,
+            &mut agg.max_systolic,
+            &mut agg.avg_systolic,
+            v.blood_pressure_systolic,
+            agg.count,
+        );
+        Self::merge_u32_stat(
+            &mut agg.min_oxygen_sat,
+            &mut agg.max_oxygen_sat,
+            &mut agg.avg_oxygen_sat,
+            v.oxygen_saturation,
+            agg.count,
+        );
         env.storage().persistent().set(&key, &agg);
     }
 
-    fn merge_u32_stat(min: &mut Option<u32>, max: &mut Option<u32>, avg: &mut Option<u32>, val: Option<u32>, count: u32) {
+    fn merge_u32_stat(
+        min: &mut Option<u32>,
+        max: &mut Option<u32>,
+        avg: &mut Option<u32>,
+        val: Option<u32>,
+        count: u32,
+    ) {
         if let Some(v) = val {
             *min = Some(min.map_or(v, |m| if v < m { v } else { m }));
             *max = Some(max.map_or(v, |m| if v > m { v } else { m }));
@@ -665,8 +688,15 @@ impl PatientVitalsContract {
                 readings.push_back(reading);
             }
         }
-        let next_page = if end < all.len() { Some(page + 1) } else { None };
-        Ok(PagedRawResult { readings, next_page })
+        let next_page = if end < all.len() {
+            Some(page + 1)
+        } else {
+            None
+        };
+        Ok(PagedRawResult {
+            readings,
+            next_page,
+        })
     }
 
     /// Paged retrieval of daily aggregates.
@@ -696,8 +726,15 @@ impl PatientVitalsContract {
                 aggregates.push_back(agg);
             }
         }
-        let next_page = if end < total_windows { Some(page + 1) } else { None };
-        Ok(PagedAggResult { aggregates, next_page })
+        let next_page = if end < total_windows {
+            Some(page + 1)
+        } else {
+            None
+        };
+        Ok(PagedAggResult {
+            aggregates,
+            next_page,
+        })
     }
 
     /// Retrieve all alerts for a patient's specific vital type.
@@ -710,14 +747,16 @@ impl PatientVitalsContract {
         requester.require_auth();
 
         // Authorization: requester must be the patient or an authorized provider.
-        if requester != patient_id
-            && !Self::is_authorized_provider(&env, &patient_id, &requester)
-        {
+        if requester != patient_id && !Self::is_authorized_provider(&env, &patient_id, &requester) {
             return Err(Error::Unauthorized);
         }
 
         let key = DataKey::VitalsAlerts(patient_id, vital_type);
-        Ok(env.storage().persistent().get(&key).unwrap_or(Vec::new(&env)))
+        Ok(env
+            .storage()
+            .persistent()
+            .get(&key)
+            .unwrap_or(Vec::new(&env)))
     }
 
     /// Remove all vitals state for a deregistered patient.
@@ -747,11 +786,7 @@ impl PatientVitalsContract {
         // #638: Purge all RawWindow and AggWindow bucket entries using the
         // index that was built up incrementally by record_vital_signs.
         let win_key = DataKey::PatientWindows(patient_id.clone());
-        if let Some(win_index) = env
-            .storage()
-            .persistent()
-            .get::<_, WindowIndex>(&win_key)
-        {
+        if let Some(win_index) = env.storage().persistent().get::<_, WindowIndex>(&win_key) {
             for i in 0..win_index.raw_indices.len() {
                 if let Some(idx) = win_index.raw_indices.get(i) {
                     env.storage()

@@ -44,7 +44,9 @@ impl MedicalDeviceRegistry {
     /// Runs atomically as part of contract creation and cannot be called again,
     /// so an attacker cannot front-run deployment and choose the regulator.
     pub fn __constructor(env: Env, regulator: Address) {
-        env.storage().instance().set(&DataKey::Regulator, &regulator);
+        env.storage()
+            .instance()
+            .set(&DataKey::Regulator, &regulator);
     }
 
     /// Return the configured regulator address.
@@ -201,9 +203,7 @@ impl MedicalDeviceRegistry {
         env.storage()
             .persistent()
             .set(&DataKey::DeviceRecord(new_id), &device);
-        env.storage()
-            .persistent()
-            .set(&udi_key, &new_id);
+        env.storage().persistent().set(&udi_key, &new_id);
 
         env.events().publish(
             (Symbol::new(&env, "device_registered"),),
@@ -273,9 +273,10 @@ impl MedicalDeviceRegistry {
             .get(&DataKey::PatientImplants(patient_id.clone()))
             .unwrap_or(Vec::new(&env));
         patient_implants.push_back(new_id);
-        env.storage()
-            .persistent()
-            .set(&DataKey::PatientImplants(patient_id.clone()), &patient_implants);
+        env.storage().persistent().set(
+            &DataKey::PatientImplants(patient_id.clone()),
+            &patient_implants,
+        );
 
         let mut device_implants: Vec<u64> = env
             .storage()
@@ -379,7 +380,12 @@ impl MedicalDeviceRegistry {
 
         env.events().publish(
             (Symbol::new(&env, "maintenance_recorded"),),
-            (new_m_id, implant_record_id, maintenance_type, maintenance_date),
+            (
+                new_m_id,
+                implant_record_id,
+                maintenance_type,
+                maintenance_date,
+            ),
         );
 
         Ok(())
@@ -490,7 +496,9 @@ impl MedicalDeviceRegistry {
             .get(&DataKey::RecallCounter)
             .unwrap_or(0);
         let new_id = count + 1;
-        env.storage().instance().set(&DataKey::RecallCounter, &new_id);
+        env.storage()
+            .instance()
+            .set(&DataKey::RecallCounter, &new_id);
 
         let recall = RecallInfo {
             recall_id: new_id,
@@ -964,7 +972,8 @@ impl MedicalDeviceRegistry {
             if !warranty_valid {
                 // Also check active warranties
                 let has_active_warranty =
-                    Self::check_warranty_status(env.clone(), device_id, current_time).unwrap_or(false);
+                    Self::check_warranty_status(env.clone(), device_id, current_time)
+                        .unwrap_or(false);
                 if !has_active_warranty {
                     out_of_warranty.push_back(device_id);
                 }

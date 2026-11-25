@@ -288,14 +288,14 @@ pub fn add_authorized_provider(env: &Env, care_plan_id: u64, provider: &Address)
         .persistent()
         .get(&DataKey::AuthorizedProviders(care_plan_id))
         .unwrap_or(Vec::new(env));
-    
+
     // Check if provider is already authorized
     for p in providers.iter() {
         if p == *provider {
             return; // Already authorized
         }
     }
-    
+
     providers.push_back(provider.clone());
     env.storage()
         .persistent()

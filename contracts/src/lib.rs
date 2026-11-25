@@ -24,11 +24,11 @@
 //! enforces per-record encryption requirements. Cryptographic hashing validates integrity.
 //! Patient address immutable. Contracts validate data integrity on read.
 
+use shared::{events::EVENT_VERSION, temporal};
 use soroban_sdk::{
-    contract, contractevent, contracterror, contractimpl, contracttype, symbol_short, Address, Env,
+    contract, contracterror, contractevent, contractimpl, contracttype, symbol_short, Address, Env,
     String, Symbol, Vec,
 };
-use shared::{events::EVENT_VERSION, temporal};
 
 // =============================================================================
 // Shared counter utilities
@@ -85,7 +85,11 @@ where
 ///
 /// The storage key is `(namespace, sub_key)`, keeping per-entity counters
 /// isolated from each other and from global counters.
-pub fn safe_increment_ns(env: &Env, namespace: &soroban_sdk::Symbol, sub_key: &soroban_sdk::Symbol) -> u64 {
+pub fn safe_increment_ns(
+    env: &Env,
+    namespace: &soroban_sdk::Symbol,
+    sub_key: &soroban_sdk::Symbol,
+) -> u64 {
     let compound = (namespace, sub_key);
     let current: u64 = env.storage().instance().get(&compound).unwrap_or(0u64);
     let next = current.checked_add(1).expect("counter overflow");
@@ -97,7 +101,11 @@ pub fn safe_increment_ns(env: &Env, namespace: &soroban_sdk::Symbol, sub_key: &s
 ///
 /// The storage key is `(namespace, sub_key)`, keeping per-entity counters
 /// isolated from each other and from global counters.
-pub fn safe_increment_persistent_ns(env: &Env, namespace: &soroban_sdk::Symbol, sub_key: &soroban_sdk::Symbol) -> u64 {
+pub fn safe_increment_persistent_ns(
+    env: &Env,
+    namespace: &soroban_sdk::Symbol,
+    sub_key: &soroban_sdk::Symbol,
+) -> u64 {
     let compound = (namespace, sub_key);
     let current: u64 = env.storage().persistent().get(&compound).unwrap_or(0u64);
     let next = current.checked_add(1).expect("counter overflow");
@@ -325,7 +333,12 @@ pub struct AppointmentScheduling;
 
 #[contractimpl]
 impl AppointmentScheduling {
-    pub fn create_appointment(env: Env, patient: Address, doctor: Address, datetime: u64) -> Result<u64, Error> {
+    pub fn create_appointment(
+        env: Env,
+        patient: Address,
+        doctor: Address,
+        datetime: u64,
+    ) -> Result<u64, Error> {
         patient.require_auth();
 
         // Validate datetime is in the future

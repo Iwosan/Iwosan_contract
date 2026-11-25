@@ -34,8 +34,8 @@ compile_error!(
 );
 
 use soroban_sdk::{
-    contract, contractimpl, contracttype, contracterror, symbol_short, Address, Bytes, BytesN,
-    Env, Vec,
+    contract, contracterror, contractimpl, contracttype, symbol_short, Address, Bytes, BytesN, Env,
+    Vec,
 };
 
 mod test;
@@ -63,26 +63,26 @@ pub const EXPIRY_INPUT_IDX: u32 = 0;
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 #[repr(u32)]
 pub enum Error {
-    AlreadyInitialized   = 1,
-    NotInitialized       = 2,
-    Unauthorized         = 3,
-    SchemaNotFound       = 4,
-    SchemaAlreadyExists  = 5,
-    ProofTooLarge        = 6,
-    TooManyPublicInputs  = 7,
-    ProofAlreadyUsed     = 8,
-    VerificationFailed   = 9,
-    BatchTooLarge        = 10,
-    RotationPending      = 11,
-    NoRotationPending    = 12,
-    NotPendingAdmin      = 13,
-    RotationExpired      = 14,
-    ProofExpired         = 15,
+    AlreadyInitialized = 1,
+    NotInitialized = 2,
+    Unauthorized = 3,
+    SchemaNotFound = 4,
+    SchemaAlreadyExists = 5,
+    ProofTooLarge = 6,
+    TooManyPublicInputs = 7,
+    ProofAlreadyUsed = 8,
+    VerificationFailed = 9,
+    BatchTooLarge = 10,
+    RotationPending = 11,
+    NoRotationPending = 12,
+    NotPendingAdmin = 13,
+    RotationExpired = 14,
+    ProofExpired = 15,
     /// Returned at runtime when `verify_eligibility` is called on a build that
     /// still uses the non-cryptographic stub verifier AND public inputs do not
     /// satisfy the stub commitment check.  Never returned by a correct proof
     /// submission; exists so integration tests can assert the stub is active.
-    StubVerifierActive   = 16,
+    StubVerifierActive = 16,
 }
 
 // ── Storage keys ──────────────────────────────────────────────────────────────
@@ -195,8 +195,10 @@ impl ZkEligibility {
             migrated_to: 0,
         };
         env.storage().persistent().set(&key, &entry);
-        env.events()
-            .publish((symbol_short!("vk_reg"), schema_version), symbol_short!("ok"));
+        env.events().publish(
+            (symbol_short!("vk_reg"), schema_version),
+            symbol_short!("ok"),
+        );
         Ok(())
     }
 
@@ -219,8 +221,10 @@ impl ZkEligibility {
 
         entry.active = false;
         env.storage().persistent().set(&key, &entry);
-        env.events()
-            .publish((symbol_short!("vk_dep"), schema_version), symbol_short!("ok"));
+        env.events().publish(
+            (symbol_short!("vk_dep"), schema_version),
+            symbol_short!("ok"),
+        );
         Ok(())
     }
 
@@ -278,10 +282,8 @@ impl ZkEligibility {
         old_entry.migrated_to = new_version;
         env.storage().persistent().set(&old_key, &old_entry);
 
-        env.events().publish(
-            (symbol_short!("sch_migr"), old_version),
-            (new_version,),
-        );
+        env.events()
+            .publish((symbol_short!("sch_migr"), old_version), (new_version,));
         Ok(())
     }
 
@@ -344,7 +346,7 @@ impl ZkEligibility {
 
         // ── Record nullifier ──────────────────────────────────────────────────
         Self::store_nullifier(&env, &proof_hash, bundle.schema_version);
-        
+
         // ── Cache eligibility with expiry ────────────────────────────────────────
         let eligibility_expires_at = env.ledger().sequence().saturating_add(
             env.storage()
@@ -352,9 +354,10 @@ impl ZkEligibility {
                 .get(&DataKey::NullifierTtlLedgers)
                 .unwrap_or(DEFAULT_NULLIFIER_TTL_LEDGERS),
         );
-        env.storage()
-            .persistent()
-            .set(&DataKey::Eligibility(subject.clone()), &(true, eligibility_expires_at));
+        env.storage().persistent().set(
+            &DataKey::Eligibility(subject.clone()),
+            &(true, eligibility_expires_at),
+        );
 
         env.events().publish(
             (symbol_short!("zk_ok"), subject, bundle.schema_version),
@@ -412,7 +415,7 @@ impl ZkEligibility {
             .storage()
             .persistent()
             .get(&DataKey::Eligibility(subject));
-        
+
         match cache_entry {
             Some((eligible, expires_at_ledger)) => {
                 // Check if cache has expired
@@ -466,7 +469,10 @@ impl ZkEligibility {
         let expires_at = env.ledger().sequence().saturating_add(ttl);
         env.storage().persistent().set(
             &DataKey::Nullifier(proof_hash.clone()),
-            &NullifierRecord { schema_version, expires_at_ledger: expires_at },
+            &NullifierRecord {
+                schema_version,
+                expires_at_ledger: expires_at,
+            },
         );
     }
 
@@ -510,7 +516,7 @@ impl ZkEligibility {
         }
 
         Self::store_nullifier(env, &proof_hash, bundle.schema_version);
-        
+
         // ── Cache eligibility with expiry ────────────────────────────────────────
         let eligibility_expires_at = env.ledger().sequence().saturating_add(
             env.storage()
@@ -518,12 +524,17 @@ impl ZkEligibility {
                 .get(&DataKey::NullifierTtlLedgers)
                 .unwrap_or(DEFAULT_NULLIFIER_TTL_LEDGERS),
         );
-        env.storage()
-            .persistent()
-            .set(&DataKey::Eligibility(subject.clone()), &(true, eligibility_expires_at));
+        env.storage().persistent().set(
+            &DataKey::Eligibility(subject.clone()),
+            &(true, eligibility_expires_at),
+        );
 
         env.events().publish(
-            (symbol_short!("zk_ok"), subject.clone(), bundle.schema_version),
+            (
+                symbol_short!("zk_ok"),
+                subject.clone(),
+                bundle.schema_version,
+            ),
             proof_hash,
         );
         true
@@ -559,7 +570,11 @@ impl ZkEligibility {
     }
 
     /// Propose transferring admin to `new_admin`. Must be confirmed within 24 hours.
-    pub fn propose_admin_rotation(env: Env, admin: Address, new_admin: Address) -> Result<(), Error> {
+    pub fn propose_admin_rotation(
+        env: Env,
+        admin: Address,
+        new_admin: Address,
+    ) -> Result<(), Error> {
         Self::assert_initialized(&env)?;
         Self::assert_admin(&env, &admin)?;
         if env.storage().persistent().has(&DataKey::PendingAdmin) {
@@ -575,8 +590,12 @@ impl ZkEligibility {
             env.storage().persistent().remove(&DataKey::RotationExpiry);
         }
         let expiry = env.ledger().timestamp() + ADMIN_ROTATION_WINDOW;
-        env.storage().persistent().set(&DataKey::PendingAdmin, &new_admin);
-        env.storage().persistent().set(&DataKey::RotationExpiry, &expiry);
+        env.storage()
+            .persistent()
+            .set(&DataKey::PendingAdmin, &new_admin);
+        env.storage()
+            .persistent()
+            .set(&DataKey::RotationExpiry, &expiry);
         Ok(())
     }
 
