@@ -47,13 +47,16 @@ pub enum ListingKind {
 }
 
 /// How it is offered. `units` on an order means items for `Sale`, days for
-/// `Rental` and days/shifts for `Hire`.
+/// `Rental` and `RentToOwn`, and days/shifts for `Hire`.
 #[contracttype]
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum TradeMode {
     Sale,
     Rental,
     Hire,
+    /// Equipment rental where released payments count toward ownership.
+    /// Created with `create_rent_to_own_listing`.
+    RentToOwn,
 }
 
 #[contracttype]
@@ -104,6 +107,12 @@ enum DataKey {
     Order(u64),
     CredentialRegistry,
     VerifyFallback,
+    /// Ownership price of a `RentToOwn` listing.
+    TargetPrice(u64),
+    /// Released rent a buyer has paid toward a `RentToOwn` listing.
+    RentPaid(u64, Address),
+    /// Who ended up owning a `RentToOwn` listing.
+    Owner(u64),
 }
 
 /// Mirrors `CredentialType` in `contracts/credential-issuer-registry`. Enum
@@ -154,6 +163,14 @@ pub struct Settled {
     pub release: bool,
 }
 
+/// A rent-to-own buyer has paid the full target price and now owns the item.
+#[contractevent(topics = ["owned"], data_format = "single-value")]
+pub struct Owned {
+    #[topic]
+    pub listing_id: u64,
+    pub owner: Address,
+}
+
 #[contract]
 pub struct IwosanMarketplace;
 
@@ -180,16 +197,90 @@ impl IwosanMarketplace {
             panic_with_error!(&env, Error::InvalidAmount);
         }
         // Personnel are hired, never sold or rented; goods are never "hired".
+        // Rent-to-own needs a target price, so it has its own entry point.
         let valid_mode = match kind {
             ListingKind::Personnel => mode == TradeMode::Hire,
-            ListingKind::Equipment => mode != TradeMode::Hire,
+            ListingKind::Equipment => mode == TradeMode::Sale || mode == TradeMode::Rental,
             ListingKind::OrthodoxDrug | ListingKind::NativeDrug => mode == TradeMode::Sale,
         };
         if !valid_mode {
             panic_with_error!(&env, Error::InvalidMode);
         }
+        Self::store_listing(
+            &env,
+            seller,
+            kind,
+            mode,
+            title,
+            details_hash,
+            unit_price,
+            stock,
+        )
+    }
 
-        let id = Self::next_id(&env, DataKey::NextListingId);
+    /// Lists equipment for rent where each released rental payment counts
+    /// toward ownership. Once a buyer's released payments reach
+    /// `target_price`, they own the item and the listing closes.
+    pub fn create_rent_to_own_listing(
+        env: Env,
+        seller: Address,
+        title: String,
+        details_hash: BytesN<32>,
+        unit_price: i128,
+        target_price: i128,
+    ) -> u64 {
+        seller.require_auth();
+        if unit_price <= 0 || target_price < unit_price {
+            panic_with_error!(&env, Error::InvalidAmount);
+        }
+        let id = Self::store_listing(
+            &env,
+            seller,
+            ListingKind::Equipment,
+            TradeMode::RentToOwn,
+            title,
+            details_hash,
+            unit_price,
+            0,
+        );
+        env.storage()
+            .persistent()
+            .set(&DataKey::TargetPrice(id), &target_price);
+        id
+    }
+
+    /// Released rent `buyer` has paid toward a rent-to-own listing, and the
+    /// listing's target price, as `(paid, target)`.
+    pub fn rent_to_own_progress(env: Env, listing_id: u64, buyer: Address) -> (i128, i128) {
+        let target: i128 = env
+            .storage()
+            .persistent()
+            .get(&DataKey::TargetPrice(listing_id))
+            .unwrap_or_else(|| panic_with_error!(&env, Error::InvalidMode));
+        let paid: i128 = env
+            .storage()
+            .persistent()
+            .get(&DataKey::RentPaid(listing_id, buyer))
+            .unwrap_or(0);
+        (paid, target)
+    }
+
+    /// The buyer who completed a rent-to-own listing, if any.
+    pub fn owner_of(env: Env, listing_id: u64) -> Option<Address> {
+        env.storage().persistent().get(&DataKey::Owner(listing_id))
+    }
+
+    fn store_listing(
+        env: &Env,
+        seller: Address,
+        kind: ListingKind,
+        mode: TradeMode,
+        title: String,
+        details_hash: BytesN<32>,
+        unit_price: i128,
+        stock: u32,
+    ) -> u64 {
+        let id = Self::next_id(env, DataKey::NextListingId);
         let listing = Listing {
             id,
             seller,
@@ -210,7 +301,7 @@ impl IwosanMarketplace {
             id,
             seller: listing.seller,
         }
-        .publish(&env);
+        .publish(env);
         id
     }
 
@@ -366,6 +457,49 @@ impl IwosanMarketplace {
             release,
         }
         .publish(env);
+
+        if release {
+            Self::count_toward_ownership(env, &order);
+        }
+    }
+
+    /// For rent-to-own listings, add released rent to the buyer's total and
+    /// hand over ownership (exactly once) when the target price is reached.
+    fn count_toward_ownership(env: &Env, order: &Order) {
+        let Some(target) = env
+            .storage()
+            .persistent()
+            .get::<DataKey, i128>(&DataKey::TargetPrice(order.listing_id))
+        else {
+            return;
+        };
+        let owner_key = DataKey::Owner(order.listing_id);
+        if env.storage().persistent().has(&owner_key) {
+            return;
+        }
+
+        let paid_key = DataKey::RentPaid(order.listing_id, order.buyer.clone());
+        let paid = env
+            .storage()
+            .persistent()
+            .get::<DataKey, i128>(&paid_key)
+            .unwrap_or(0)
+            + order.amount;
+        env.storage().persistent().set(&paid_key, &paid);
+
+        if paid >= target {
+            env.storage().persistent().set(&owner_key, &order.buyer);
+            let mut listing = Self::get_listing(env.clone(), order.listing_id);
+            listing.active = false;
+            env.storage()
+                .persistent()
+                .set(&DataKey::Listing(order.listing_id), &listing);
+            Owned {
+                listing_id: order.listing_id,
+                owner: order.buyer.clone(),
+            }
+            .publish(env);
+        }
     }
 
     /// Equipment trades once listed. Drugs and personnel need the seller to
