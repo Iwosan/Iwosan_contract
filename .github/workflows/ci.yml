@@ -24,6 +24,7 @@ env:
     -p doctor-registry
     -p drug-batch-registry
     -p hai-tracking
+    -p health-savings-pool
     -p healthcare-credentialing
     -p hospital-discharge-management
     -p insurer-registry
@@ -38,17 +39,18 @@ env:
     -p ttl-config
     -p zk-eligibility
     -p zk-eligibility-verifier
-  # Same list without iwosan-marketplace, which becomes formatted when #37 is
-  # merged; add it here then.
+  # Crates checked with cargo fmt (currently the same list).
   FMT_CRATES: >-
     -p Contracts
     -p credential-issuer-registry
     -p doctor-registry
     -p drug-batch-registry
     -p hai-tracking
+    -p health-savings-pool
     -p healthcare-credentialing
     -p hospital-discharge-management
     -p insurer-registry
+    -p iwosan-marketplace
     -p medical-device-tracking
     -p multisig-governance
     -p nft-badges
@@ -63,6 +65,8 @@ env:
   CLIPPY_CRATES: >-
     -p credential-issuer-registry
     -p drug-batch-registry
+    -p health-savings-pool
+    -p iwosan-marketplace
 
 jobs:
   fmt:
