@@ -238,3 +238,138 @@ mod credentials {
         assert!(s.market.verify_fallback());
     }
 }
+
+mod rent_to_own {
+    use super::*;
+
+    struct Setup {
+        env: Env,
+        market: IwosanMarketplaceClient<'static>,
+        token: Address,
+        seller: Address,
+        buyer: Address,
+        listing: u64,
+    }
+
+    /// A hospital bed rented at 100 per day, owned after 1_000 of rent.
+    fn setup() -> Setup {
+        let (env, market, _admin, token) = super::setup();
+        let seller = Address::generate(&env);
+        let buyer = Address::generate(&env);
+        StellarAssetClient::new(&env, &token).mint(&buyer, &5_000);
+        let listing = market.create_rent_to_own_listing(
+            &seller,
+            &String::from_str(&env, "Electric hospital bed"),
+            &BytesN::from_array(&env, &[0; 32]),
+            &100,
+            &1_000,
+        );
+        Setup {
+            env,
+            market,
+            token,
+            seller,
+            buyer,
+            listing,
+        }
+    }
+
+    fn rent_days(s: &Setup, days: u32) -> u64 {
+        let order = s.market.place_order(&s.buyer, &s.listing, &days);
+        s.market.confirm_order(&order);
+        order
+    }
+
+    #[test]
+    fn partial_payments_are_tracked_without_transferring_ownership() {
+        let s = setup();
+
+        rent_days(&s, 4);
+        rent_days(&s, 3);
+
+        assert_eq!(
+            s.market.rent_to_own_progress(&s.listing, &s.buyer),
+            (700, 1_000)
+        );
+        assert_eq!(s.market.owner_of(&s.listing), None);
+        assert!(s.market.get_listing(&s.listing).active);
+        assert_eq!(token::Client::new(&s.env, &s.token).balance(&s.seller), 700);
+    }
+
+    #[test]
+    fn reaching_the_target_transfers_ownership_and_closes_the_listing() {
+        let s = setup();
+
+        rent_days(&s, 6);
+        rent_days(&s, 4);
+
+        assert_eq!(s.market.owner_of(&s.listing), Some(s.buyer.clone()));
+        assert!(!s.market.get_listing(&s.listing).active);
+        assert_eq!(
+            s.market.rent_to_own_progress(&s.listing, &s.buyer),
+            (1_000, 1_000)
+        );
+    }
+
+    #[test]
+    #[should_panic(expected = "Error(Contract, #4)")]
+    fn owned_item_cannot_be_rented_again() {
+        let s = setup();
+        rent_days(&s, 10);
+
+        s.market.place_order(&s.buyer, &s.listing, &1);
+    }
+
+    #[test]
+    fn ownership_transfers_once_even_with_an_open_order() {
+        let s = setup();
+        let other = Address::generate(&s.env);
+        StellarAssetClient::new(&s.env, &s.token).mint(&other, &5_000);
+        // Another renter's order is still escrowed when the buyer completes.
+        let open_order = s.market.place_order(&other, &s.listing, &10);
+        rent_days(&s, 10);
+
+        s.market.confirm_order(&open_order);
+
+        assert_eq!(s.market.owner_of(&s.listing), Some(s.buyer.clone()));
+    }
+
+    #[test]
+    fn refunded_rent_does_not_count_toward_ownership() {
+        let s = setup();
+        let order = s.market.place_order(&s.buyer, &s.listing, &10);
+
+        s.market.refund_order(&order);
+
+        assert_eq!(s.market.rent_to_own_progress(&s.listing, &s.buyer).0, 0);
+        assert_eq!(s.market.owner_of(&s.listing), None);
+    }
+
+    #[test]
+    #[should_panic(expected = "Error(Contract, #3)")]
+    fn target_below_unit_price_is_rejected() {
+        let s = setup();
+        s.market.create_rent_to_own_listing(
+            &s.seller,
+            &String::from_str(&s.env, "Wheelchair"),
+            &BytesN::from_array(&s.env, &[0; 32]),
+            &100,
+            &50,
+        );
+    }
+
+    #[test]
+    #[should_panic(expected = "Error(Contract, #7)")]
+    fn create_listing_rejects_rent_to_own_without_a_target() {
+        let s = setup();
+        s.market.create_listing(
+            &s.seller,
+            &ListingKind::Equipment,
+            &TradeMode::RentToOwn,
+            &String::from_str(&s.env, "Wheelchair"),
+            &BytesN::from_array(&s.env, &[0; 32]),
+            &100,
+            &0,
+        );
+    }
+}
