@@ -1,5 +1,7 @@
 # CI/CD Setup Guide
 
+> **Note:** CI is now a single workflow, `.github/workflows/ci.yml` (see `.github/workflows/README.md`). The `deploy-testnet.yml`, `security-audit.yml` and `wasm-size-check.yml` workflows described below were removed; deploy with `scripts/deploy_testnet.sh` instead.
+
 This guide walks you through setting up the complete CI/CD pipeline for the Iwosan contracts repository.
 
 ## Prerequisites

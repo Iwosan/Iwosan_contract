@@ -1,28 +1,27 @@
 # Workflows
 
-This directory holds the GitHub Actions workflows for the repository.
+| Workflow | Runs on | What it does |
+|---|---|---|
+| `ci.yml` | every PR and push to `main` | `Format`: `cargo fmt --check`. `Clippy · test · WASM build`: clippy (warnings are errors), `cargo test` and a release WASM build. |
+| `extend-ttls.yml` | schedule / manual | Extends storage TTLs of deployed contracts so they do not expire. Not a CI check. |
 
-## Required checks
+## Which contracts CI covers
 
-Before a PR can merge, branch protection must require these checks to pass:
+`ci.yml` lists the crates it checks in `CRATES` (tests and WASM build),
+`FMT_CRATES` (formatting) and `CLIPPY_CRATES` (clippy). These are the
+contracts that currently compile and pass their tests.
 
-- `cargo check --workspace --tests`
-- `cargo build --target wasm32v1-none --release --workspace`
+The remaining workspace members do not compile or have failing tests yet,
+mostly because a few shared crates are broken (for example
+`provider-registry/src/lib.rs` has a syntax error left by a merge, and many
+crates use it in their tests). When you fix one, add it to the lists in
+`ci.yml` in the same PR so it stays fixed.
 
-## Guard scripts
+## Deploying
 
-The `scripts/` directory contains guards that run on every PR to catch
-"fix" PRs that rewrite whole files from stale bases and silently drop
-functionality:
-
-- `scripts/check-truncation.sh` — fails when any file under `contracts/`
-  contains a truncation marker such as `/* … truncated 1234 chars */`.
-- `scripts/check-api-surface.sh` — extracts `pub fn` names inside
-  `#[contractimpl]` blocks from the base branch and the PR branch and
-  fails when a public function is removed. A PR may bypass this by
-  adding the `breaking-change` label.
-- `scripts/check-test-count.sh` — fails when `cargo test -p <crate>`
-  reports `0 passed` for a crate that has a `test.rs`.
+Deployment is not part of CI. Deploy from a machine that has the deployer
+key, with `scripts/deploy_testnet.sh` or `scripts/deploy_all.sh`. Check WASM
+sizes locally with `scripts/check-wasm-sizes.sh`.
 
 ## PR template
 

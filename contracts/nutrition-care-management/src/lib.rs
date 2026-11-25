@@ -333,9 +333,10 @@ impl NutritionCareContract {
         if admin != stored_admin {
             return Err(Error::Unauthorized);
         }
-        env.storage()
-            .instance()
-            .set(&DataKey::PrescriptionContractAddress, &prescription_contract);
+        env.storage().instance().set(
+            &DataKey::PrescriptionContractAddress,
+            &prescription_contract,
+        );
         Ok(())
     }
 
@@ -362,10 +363,7 @@ impl NutritionCareContract {
     /// Only succeeds if no admin has been set yet (first-time setup), or if
     /// called by the current admin (rotation). This prevents any caller from
     /// self-appointing as admin once one has already been established.
-    pub fn set_contraindication_admin(
-        env: Env,
-        admin: Address,
-    ) -> Result<(), Error> {
+    pub fn set_contraindication_admin(env: Env, admin: Address) -> Result<(), Error> {
         admin.require_auth();
 
         if let Some(current_admin) = env
@@ -996,7 +994,10 @@ impl NutritionCareContract {
             i += 1;
         }
         let has_more = (start + page_size) < total;
-        OutcomePageResult { outcome_ids, has_more }
+        OutcomePageResult {
+            outcome_ids,
+            has_more,
+        }
     }
 
     // ------------------------------------------------------------------
@@ -1050,8 +1051,7 @@ impl NutritionCareContract {
         }
 
         // Require care-plan contract address to be configured.
-        get_care_plan_contract_address(&env)
-            .ok_or(Error::CarePlanContractNotConfigured)?;
+        get_care_plan_contract_address(&env).ok_or(Error::CarePlanContractNotConfigured)?;
 
         // Idempotency: skip if already linked to the same care plan.
         if let Some(existing) = get_outcome_care_plan_link(&env, outcome_id) {

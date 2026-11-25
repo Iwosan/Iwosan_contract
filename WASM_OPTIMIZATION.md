@@ -306,7 +306,7 @@ Compare before/after sizes to verify improvements.
 
 ### Automatic Size Checks
 
-The `wasm-size-check.yml` workflow runs on every PR:
+The `wasm-size-check.yml` workflow has been removed from CI. Run `scripts/check-wasm-sizes.sh` locally; it:
 
 1. Builds all contracts
 2. Optimizes binaries

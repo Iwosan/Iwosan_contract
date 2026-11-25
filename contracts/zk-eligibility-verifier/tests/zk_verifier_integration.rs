@@ -5,7 +5,7 @@
 
 use soroban_sdk::{testutils::Address as _, Address, Bytes, Env, Vec};
 use zk_eligibility_verifier::{
-    verify_eligibility_proof, PlaceholderZkProofVerifier, RUST_INTERFACE_VERSION, ZKProofVerifier,
+    verify_eligibility_proof, PlaceholderZkProofVerifier, ZKProofVerifier, RUST_INTERFACE_VERSION,
 };
 
 #[test]

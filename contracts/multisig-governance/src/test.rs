@@ -47,16 +47,10 @@ fn test_constructor_atomic_init() {
     let env = Env::default();
     env.mock_all_auths();
     let signers = make_signers(&env, 3);
-    let contract_id = env.register(
-        MultisigGovernance,
-        (&signers, &2u32, &3600u64, &2u32),
-    );
+    let contract_id = env.register(MultisigGovernance, (&signers, &2u32, &3600u64, &2u32));
     let _client = MultisigGovernanceClient::new(&env, &contract_id);
     let stored_signers: Vec<Address> = env.as_contract(&contract_id, || {
-        env.storage()
-            .persistent()
-            .get(&DataKey::Signers)
-            .unwrap()
+        env.storage().persistent().get(&DataKey::Signers).unwrap()
     });
     assert_eq!(stored_signers.len(), 3);
     assert_eq!(stored_signers, signers);
@@ -70,10 +64,7 @@ fn test_invalid_threshold_panics() {
     let signers = make_signers(&env, 2);
 
     // threshold (3) exceeds the number of signers, so the constructor rejects it.
-    env.register(
-        MultisigGovernance,
-        (&signers, &3u32, &3600u64, &2u32),
-    );
+    env.register(MultisigGovernance, (&signers, &3u32, &3600u64, &2u32));
 }
 
 // ── propose ───────────────────────────────────────────────────────────────────
@@ -111,7 +102,10 @@ fn test_domain_tags_differ_per_action() {
     client.propose_multisig_action(&s0, &symbol_short!("import"), &payload(&env));
     let p1 = client.get_proposal(&symbol_short!("export"));
     let p2 = client.get_proposal(&symbol_short!("import"));
-    assert_ne!(p1.domain_tag, p2.domain_tag, "domain tags must differ per action");
+    assert_ne!(
+        p1.domain_tag, p2.domain_tag,
+        "domain tags must differ per action"
+    );
 }
 
 // ── eligible signer snapshot ──────────────────────────────────────────────────
@@ -252,7 +246,9 @@ fn test_finalize_expired_marks_failed() {
     let (env, signers, client) = setup(3, 3);
     let s0 = signers.get(0).unwrap();
     client.propose_multisig_action(&s0, &symbol_short!("export"), &payload(&env));
-    env.ledger().with_mut(|li| { li.timestamp += 3601; });
+    env.ledger().with_mut(|li| {
+        li.timestamp += 3601;
+    });
     client.finalize_expired(&symbol_short!("export"));
     let proposal = client.get_proposal(&symbol_short!("export"));
     assert_eq!(proposal.status, ProposalStatus::Failed);
@@ -326,7 +322,9 @@ fn test_expired_proposal_returns_error() {
     let s0 = signers.get(0).unwrap();
     let s1 = signers.get(1).unwrap();
     client.propose_multisig_action(&s0, &symbol_short!("export"), &payload(&env));
-    env.ledger().with_mut(|li| { li.timestamp += 3601; });
+    env.ledger().with_mut(|li| {
+        li.timestamp += 3601;
+    });
     let err = client
         .try_approve_multisig_action(&s1, &symbol_short!("export"))
         .unwrap_err()
@@ -413,10 +411,7 @@ fn test_duplicate_approve_signer_change_returns_error() {
 
     client.propose_signer_change(&s0, &SignerChangeKind::Add, &new_signer);
     client.approve_signer_change(&s1);
-    let err = client
-        .try_approve_signer_change(&s1)
-        .unwrap_err()
-        .unwrap();
+    let err = client.try_approve_signer_change(&s1).unwrap_err().unwrap();
     assert_eq!(err, Error::AlreadyVoted);
 }
 
@@ -487,11 +482,10 @@ fn test_approve_signer_change_expired_returns_error() {
     let new_signer = Address::generate(&env);
 
     client.propose_signer_change(&s0, &SignerChangeKind::Add, &new_signer);
-    env.ledger().with_mut(|li| { li.timestamp += 3601; });
-    let err = client
-        .try_approve_signer_change(&s1)
-        .unwrap_err()
-        .unwrap();
+    env.ledger().with_mut(|li| {
+        li.timestamp += 3601;
+    });
+    let err = client.try_approve_signer_change(&s1).unwrap_err().unwrap();
     assert_eq!(err, Error::Expired);
 }
 

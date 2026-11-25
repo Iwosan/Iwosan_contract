@@ -531,7 +531,10 @@ fn test_record_patient_days_only_facility_can_update_case() {
     assert_eq!(result, Err(Ok(Error::NotAuthorized)));
 
     client.record_patient_days(&infection_id, &100, &facility);
-    assert_eq!(client.get_infection_case(&infection_id).patient_days, Some(100));
+    assert_eq!(
+        client.get_infection_case(&infection_id).patient_days,
+        Some(100)
+    );
 }
 
 #[test]

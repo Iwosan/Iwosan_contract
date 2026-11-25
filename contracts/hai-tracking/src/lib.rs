@@ -369,13 +369,8 @@ impl HAITrackingContract {
         let window_seconds = u64::from(time_window_days) * 86_400;
         let window_start = now.saturating_sub(window_seconds);
 
-        let infection_ids = Self::get_case_ids_for_period(
-            &env,
-            &facility_id,
-            &infection_type,
-            window_start,
-            now,
-        );
+        let infection_ids =
+            Self::get_case_ids_for_period(&env, &facility_id, &infection_type, window_start, now);
         let mut case_count = 0u32;
 
         let mut i = 0u32;
@@ -576,7 +571,10 @@ impl HAITrackingContract {
             if !env
                 .storage()
                 .persistent()
-                .has(&DataKey::CensusFacilityDayUnits(facility_id.clone(), day_index))
+                .has(&DataKey::CensusFacilityDayUnits(
+                    facility_id.clone(),
+                    day_index,
+                ))
             {
                 facility_days.push_back(day_index);
                 env.storage()
@@ -709,9 +707,10 @@ impl HAITrackingContract {
                 let mut day_index = 0u32;
                 while day_index < day_indexes.len() {
                     if let Some(day) = day_indexes.get(day_index) {
-                        let census: Option<CensusRecord> = env.storage().persistent().get(
-                            &DataKey::Census(facility_id.clone(), unit_id.clone(), day),
-                        );
+                        let census: Option<CensusRecord> = env
+                            .storage()
+                            .persistent()
+                            .get(&DataKey::Census(facility_id.clone(), unit_id.clone(), day));
                         if let Some(census) = census {
                             if census.date <= time_period_end
                                 && census.date.saturating_add(86_399) >= time_period_start
@@ -748,19 +747,13 @@ impl HAITrackingContract {
                             let units: Vec<String> = env
                                 .storage()
                                 .persistent()
-                                .get(&DataKey::CensusFacilityDayUnits(
-                                    facility_id.clone(),
-                                    day,
-                                ))
+                                .get(&DataKey::CensusFacilityDayUnits(facility_id.clone(), day))
                                 .unwrap_or(Vec::new(&env));
                             for unit_id in units.iter() {
-                                let census: Option<CensusRecord> = env.storage().persistent().get(
-                                    &DataKey::Census(
-                                        facility_id.clone(),
-                                        unit_id,
-                                        day,
-                                    ),
-                                );
+                                let census: Option<CensusRecord> = env
+                                    .storage()
+                                    .persistent()
+                                    .get(&DataKey::Census(facility_id.clone(), unit_id, day));
                                 if let Some(census) = census {
                                     denominator = denominator.saturating_add(
                                         Self::census_days_for_type(&env, &census, &infection_type),
@@ -782,8 +775,7 @@ impl HAITrackingContract {
             return Err(Error::DivisionByZero);
         }
 
-        let rate_per_1000_days_x100 =
-            (i64::from(numerator) * 100_000) / i64::from(denominator);
+        let rate_per_1000_days_x100 = (i64::from(numerator) * 100_000) / i64::from(denominator);
         let sir_x100 = unit.and_then(|unit_id| {
             let config: Option<WardRateConfig> = env.storage().persistent().get(
                 &DataKey::WardRateConfig(facility_id.clone(), unit_id, infection_type.clone()),
@@ -793,8 +785,8 @@ impl HAITrackingContract {
                     return None;
                 }
                 let numerator_scaled = i128::from(numerator) * 10_000_000;
-                let expected_scaled = i128::from(denominator)
-                    * i128::from(config.baseline_rate_x100);
+                let expected_scaled =
+                    i128::from(denominator) * i128::from(config.baseline_rate_x100);
                 Some((numerator_scaled / expected_scaled) as i64)
             })
         });
@@ -964,13 +956,8 @@ impl HAITrackingContract {
         let window_start = now.saturating_sub(window_secs);
 
         // Count infections in the rolling window for this ward.
-        let infection_ids = Self::get_case_ids_for_period(
-            &env,
-            &facility_id,
-            &infection_type,
-            window_start,
-            now,
-        );
+        let infection_ids =
+            Self::get_case_ids_for_period(&env, &facility_id, &infection_type, window_start, now);
         let mut case_count = 0u32;
         let mut i = 0u32;
         while i < infection_ids.len() {
@@ -1002,14 +989,17 @@ impl HAITrackingContract {
             let mut day_index = 0u32;
             while day_index < day_indexes.len() {
                 if let Some(day) = day_indexes.get(day_index) {
-                    let census: Option<CensusRecord> = env.storage().persistent().get(
-                        &DataKey::Census(facility_id.clone(), ward_id.clone(), day),
-                    );
+                    let census: Option<CensusRecord> = env
+                        .storage()
+                        .persistent()
+                        .get(&DataKey::Census(facility_id.clone(), ward_id.clone(), day));
                     if let Some(census) = census {
                         if census.date >= window_start && census.date <= now {
-                            denominator = denominator.saturating_add(
-                                Self::census_days_for_type(&env, &census, &infection_type),
-                            );
+                            denominator = denominator.saturating_add(Self::census_days_for_type(
+                                &env,
+                                &census,
+                                &infection_type,
+                            ));
                         }
                     }
                 }
@@ -1027,7 +1017,8 @@ impl HAITrackingContract {
             (i64::from(case_count) * 1000 * 100) / i64::from(denominator)
         };
 
-        let threshold = (config.baseline_rate_x100
+        let threshold = (config
+            .baseline_rate_x100
             .saturating_mul(i64::from(config.threshold_multiplier_x100)))
             / 100;
         let is_outbreak = current_rate_x100 > threshold;
@@ -1116,11 +1107,7 @@ impl HAITrackingContract {
         loop {
             let ids = Self::get_ids(
                 env,
-                DataKey::FacilityInfectionMonth(
-                    facility_id.clone(),
-                    infection_type.clone(),
-                    month,
-                ),
+                DataKey::FacilityInfectionMonth(facility_id.clone(), infection_type.clone(), month),
             );
             for infection_id in ids.iter() {
                 cases.push_back(infection_id);
@@ -1138,12 +1125,10 @@ impl HAITrackingContract {
         let shifted_days = days + 719_468;
         let era = shifted_days / 146_097;
         let day_of_era = shifted_days - era * 146_097;
-        let year_of_era = (day_of_era - day_of_era / 1_460 + day_of_era / 36_524
-            - day_of_era / 146_096)
-            / 365;
+        let year_of_era =
+            (day_of_era - day_of_era / 1_460 + day_of_era / 36_524 - day_of_era / 146_096) / 365;
         let mut year = year_of_era + era * 400;
-        let day_of_year = day_of_era
-            - (365 * year_of_era + year_of_era / 4 - year_of_era / 100);
+        let day_of_year = day_of_era - (365 * year_of_era + year_of_era / 4 - year_of_era / 100);
         let month_prime = (5 * day_of_year + 2) / 153;
         let month = if month_prime < 10 {
             month_prime + 3

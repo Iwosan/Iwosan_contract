@@ -47,9 +47,15 @@ fn test_register_insurer() {
     register_insurer_with_anchor(&env, &client, &admin, &insurer_wallet);
 
     let insurer = client.get_insurer(&insurer_wallet);
-    assert_eq!(insurer.name, String::from_str(&env, "HealthGuard Insurance"));
+    assert_eq!(
+        insurer.name,
+        String::from_str(&env, "HealthGuard Insurance")
+    );
     assert_eq!(insurer.license_id, String::from_str(&env, "INS-2026-12345"));
-    assert_eq!(insurer.metadata, String::from_str(&env, "Full medical coverage provider"));
+    assert_eq!(
+        insurer.metadata,
+        String::from_str(&env, "Full medical coverage provider")
+    );
     assert_eq!(insurer.credential.credential_hash, dummy_hash(&env, 1));
 }
 
@@ -95,7 +101,10 @@ fn test_update_insurer() {
 
     let insurer = client.get_insurer(&insurer_wallet);
     assert_eq!(insurer.metadata, new_metadata);
-    assert_eq!(insurer.name, String::from_str(&env, "HealthGuard Insurance"));
+    assert_eq!(
+        insurer.name,
+        String::from_str(&env, "HealthGuard Insurance")
+    );
 }
 
 #[test]
@@ -323,10 +332,8 @@ fn test_expired_insurer_anchor_disables_membership() {
     env.ledger().with_mut(|li| li.timestamp = 151);
     assert!(!client.is_insurer_active(&insurer_wallet));
 
-    let result = client.try_update_contact_details(
-        &insurer_wallet,
-        &String::from_str(&env, "phone: 555-0123"),
-    );
+    let result = client
+        .try_update_contact_details(&insurer_wallet, &String::from_str(&env, "phone: 555-0123"));
     assert!(matches!(result, Err(Ok(Error::NotAuthorized))));
 }
 
@@ -353,7 +360,10 @@ fn test_full_workflow() {
     client.add_claims_reviewer(&insurer_wallet, &reviewer2);
 
     let insurer = client.get_insurer(&insurer_wallet);
-    assert_eq!(insurer.name, String::from_str(&env, "HealthGuard Insurance"));
+    assert_eq!(
+        insurer.name,
+        String::from_str(&env, "HealthGuard Insurance")
+    );
     assert_eq!(insurer.license_id, String::from_str(&env, "INS-2026-12345"));
     assert_eq!(insurer.contact_details, contact);
     assert_eq!(insurer.coverage_policies, coverage);
@@ -392,7 +402,10 @@ fn test_coverage_plans_round_trip() {
     client.set_coverage_plans(&insurer_wallet, &plans);
     let loaded = client.get_coverage_plans(&insurer_wallet);
     assert_eq!(loaded.len(), 1);
-    assert_eq!(loaded.get(0).unwrap().plan_name, String::from_str(&env, "PPO Gold"));
+    assert_eq!(
+        loaded.get(0).unwrap().plan_name,
+        String::from_str(&env, "PPO Gold")
+    );
 }
 
 #[test]

@@ -1123,8 +1123,10 @@ fn test_persistent_storage_bounded_instance_size() {
     assert_eq!(sessions_c.len(), 5);
 
     // Goals across plans remain isolated.
-    let g_a = client.set_rehabilitation_goal(&plan_a, &Symbol::new(&env, "strength"), &100u32, &9000u64);
-    let g_b = client.set_rehabilitation_goal(&plan_b, &Symbol::new(&env, "strength"), &100u32, &9000u64);
+    let g_a =
+        client.set_rehabilitation_goal(&plan_a, &Symbol::new(&env, "strength"), &100u32, &9000u64);
+    let g_b =
+        client.set_rehabilitation_goal(&plan_b, &Symbol::new(&env, "strength"), &100u32, &9000u64);
     assert_ne!(g_a, g_b);
     assert_eq!(client.get_measurable_goal(&therapist, &g_a).plan_id, plan_a);
     assert_eq!(client.get_measurable_goal(&therapist, &g_b).plan_id, plan_b);
@@ -1165,7 +1167,10 @@ fn test_get_evaluation_access_control() {
         client.get_evaluation(&therapist, &eval_id).patient_id,
         patient
     );
-    assert_eq!(client.get_evaluation(&patient, &eval_id).patient_id, patient);
+    assert_eq!(
+        client.get_evaluation(&patient, &eval_id).patient_id,
+        patient
+    );
     assert!(client.try_get_evaluation(&stranger, &eval_id).is_err());
 }
 
@@ -1198,14 +1203,9 @@ fn test_get_rom_assessments_access_control() {
         &Some(String::from_str(&env, "Moderate")),
     );
 
-    assert_eq!(
-        client.get_rom_assessments(&therapist, &eval_id).len(),
-        1
-    );
+    assert_eq!(client.get_rom_assessments(&therapist, &eval_id).len(), 1);
     assert_eq!(client.get_rom_assessments(&patient, &eval_id).len(), 1);
-    assert!(client
-        .try_get_rom_assessments(&stranger, &eval_id)
-        .is_err());
+    assert!(client.try_get_rom_assessments(&stranger, &eval_id).is_err());
 }
 
 #[test]
@@ -1217,8 +1217,14 @@ fn test_get_treatment_plan_access_control() {
     let client = RehabilitationServicesContractClient::new(&env, &contract_id);
     let (_, plan_id) = create_plan(&env, &client, &patient, &therapist);
 
-    assert_eq!(client.get_treatment_plan(&therapist, &plan_id).plan_id, plan_id);
-    assert_eq!(client.get_treatment_plan(&patient, &plan_id).plan_id, plan_id);
+    assert_eq!(
+        client.get_treatment_plan(&therapist, &plan_id).plan_id,
+        plan_id
+    );
+    assert_eq!(
+        client.get_treatment_plan(&patient, &plan_id).plan_id,
+        plan_id
+    );
     assert!(client.try_get_treatment_plan(&stranger, &plan_id).is_err());
 }
 
@@ -1260,11 +1266,15 @@ fn test_get_discharge_record_access_control() {
     );
 
     assert_eq!(
-        client.get_discharge_record(&therapist, &plan_id).discharge_date,
+        client
+            .get_discharge_record(&therapist, &plan_id)
+            .discharge_date,
         5000u64
     );
     assert_eq!(
-        client.get_discharge_record(&patient, &plan_id).discharge_date,
+        client
+            .get_discharge_record(&patient, &plan_id)
+            .discharge_date,
         5000u64
     );
     assert!(client
@@ -1282,7 +1292,9 @@ fn test_get_treatment_plan_history_access_control() {
     let (_, plan_id) = create_plan(&env, &client, &patient, &therapist);
 
     assert_eq!(
-        client.get_treatment_plan_history(&therapist, &plan_id).len(),
+        client
+            .get_treatment_plan_history(&therapist, &plan_id)
+            .len(),
         1
     );
     assert_eq!(
@@ -1348,9 +1360,7 @@ fn test_get_measurable_goal_access_control() {
         client.get_measurable_goal(&patient, &goal_id).goal_id,
         goal_id
     );
-    assert!(client
-        .try_get_measurable_goal(&stranger, &goal_id)
-        .is_err());
+    assert!(client.try_get_measurable_goal(&stranger, &goal_id).is_err());
 }
 
 #[test]

@@ -24,7 +24,9 @@
 //! Follow-up care provider identity validated. Discharge timestamp immutable once recorded.
 //! Temporal validation prevents backdated discharge records.
 
-use soroban_sdk::{contract, contractimpl, contractclient, Address, BytesN, Env, String, Symbol, Vec};
+use soroban_sdk::{
+    contract, contractclient, contractimpl, Address, BytesN, Env, String, Symbol, Vec,
+};
 
 mod storage;
 mod types;
@@ -82,8 +84,7 @@ impl HospitalDischargeContract {
 
         let hospital_registry = get_hospital_registry(&env)?;
         let provider_registry = get_provider_registry(&env)?;
-        if !HospitalRegistryClient::new(&env, &hospital_registry)
-            .is_hospital_active(&hospital_id)
+        if !HospitalRegistryClient::new(&env, &hospital_registry).is_hospital_active(&hospital_id)
             || !ProviderRegistryClient::new(&env, &provider_registry)
                 .is_provider_affiliated(&caller, &hospital_id)
         {
@@ -138,7 +139,9 @@ impl HospitalDischargeContract {
         Self::verify_plan_authorization(&env, &caller, discharge_plan_id)?;
 
         let mut plan = get_discharge_plan(&env, discharge_plan_id)?;
-        if plan.status != DischargeStatus::Planning && plan.status != DischargeStatus::ReadinessAssessed {
+        if plan.status != DischargeStatus::Planning
+            && plan.status != DischargeStatus::ReadinessAssessed
+        {
             return Err(Error::InvalidStatus);
         }
 
@@ -198,7 +201,9 @@ impl HospitalDischargeContract {
         Self::verify_plan_authorization(&env, &caller, discharge_plan_id)?;
 
         let mut plan = get_discharge_plan(&env, discharge_plan_id)?;
-        if plan.status != DischargeStatus::ReadinessAssessed && plan.status != DischargeStatus::OrdersCreated {
+        if plan.status != DischargeStatus::ReadinessAssessed
+            && plan.status != DischargeStatus::OrdersCreated
+        {
             return Err(Error::InvalidStatus);
         }
 

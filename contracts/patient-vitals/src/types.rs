@@ -49,8 +49,8 @@ pub struct VitalStatistics {
 }
 
 /// Window index = timestamp / WINDOW_SECONDS
-pub const RAW_WINDOW_SECONDS: u64 = 3600;   // 1-hour raw buckets
-pub const AGG_WINDOW_SECONDS: u64 = 86400;  // 24-hour aggregate buckets
+pub const RAW_WINDOW_SECONDS: u64 = 3600; // 1-hour raw buckets
+pub const AGG_WINDOW_SECONDS: u64 = 86400; // 24-hour aggregate buckets
 pub const PAGE_SIZE: u32 = 50;
 /// Minimum seconds between repeated alerts for the same patient+vital_type.
 pub const ALERT_COOLDOWN_SECONDS: u64 = 300; // 5 minutes
@@ -63,7 +63,7 @@ pub enum DataKey {
     DeviceReg(Address, String),        // map to DeviceRegistration
     /// Reverse mapping: (patient_id, device_address) → () — used for trigger_vital_alert auth.
     DeviceAddress(Address, Address),
-    VitalsAlerts(Address, Symbol),     // map to Vec<VitalAlert>
+    VitalsAlerts(Address, Symbol), // map to Vec<VitalAlert>
     /// Raw readings bucketed by hour window index
     RawWindow(Address, u64),
     /// Aggregated stats bucketed by day window index

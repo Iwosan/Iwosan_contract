@@ -37,7 +37,12 @@ fn test_record_vital_signs() {
         &provider_id,
         &Symbol::new(&env, "heart_rate"),
         &Range { min: 60, max: 100 },
-        &AlertThresholds { critical_low: None, low: None, high: None, critical_high: None },
+        &AlertThresholds {
+            critical_low: None,
+            low: None,
+            high: None,
+            critical_high: None,
+        },
         &3600,
     );
 
@@ -131,11 +136,22 @@ fn test_device_registration_and_reading() {
         },
     });
 
-    client.submit_device_reading(&device_id, &patient_id, &device_address, &1672531200, &readings);
+    client.submit_device_reading(
+        &device_id,
+        &patient_id,
+        &device_address,
+        &1672531200,
+        &readings,
+    );
 
     // Verify trends to see the reading was added
-    let trends =
-        client.get_vital_trends(&patient_id, &patient_id, &Symbol::new(&env, "heart_rate"), &0, &u64::MAX);
+    let trends = client.get_vital_trends(
+        &patient_id,
+        &patient_id,
+        &Symbol::new(&env, "heart_rate"),
+        &0,
+        &u64::MAX,
+    );
     assert_eq!(trends.len(), 1);
     assert_eq!(trends.get(0).unwrap().vitals.heart_rate, Some(75));
 }
@@ -178,11 +194,22 @@ fn test_submit_device_reading_device_auth() {
     });
 
     // Device submits via its own auth (not patient auth)
-    client.submit_device_reading(&device_id, &patient_id, &device_address, &1672531200, &readings);
+    client.submit_device_reading(
+        &device_id,
+        &patient_id,
+        &device_address,
+        &1672531200,
+        &readings,
+    );
 
     // Verify the reading was added
-    let trends =
-        client.get_vital_trends(&patient_id, &patient_id, &Symbol::new(&env, "heart_rate"), &0, &u64::MAX);
+    let trends = client.get_vital_trends(
+        &patient_id,
+        &patient_id,
+        &Symbol::new(&env, "heart_rate"),
+        &0,
+        &u64::MAX,
+    );
     assert_eq!(trends.len(), 1);
     assert_eq!(trends.get(0).unwrap().vitals.heart_rate, Some(75));
     // Recorder should be the device address
@@ -227,11 +254,22 @@ fn test_submit_device_reading_patient_fallback() {
     });
 
     // Patient can submit on device's behalf via fallback auth
-    client.submit_device_reading(&device_id, &patient_id, &device_address, &1672531200, &readings);
+    client.submit_device_reading(
+        &device_id,
+        &patient_id,
+        &device_address,
+        &1672531200,
+        &readings,
+    );
 
     // Verify the reading was added
-    let trends =
-        client.get_vital_trends(&patient_id, &patient_id, &Symbol::new(&env, "heart_rate"), &0, &u64::MAX);
+    let trends = client.get_vital_trends(
+        &patient_id,
+        &patient_id,
+        &Symbol::new(&env, "heart_rate"),
+        &0,
+        &u64::MAX,
+    );
     assert_eq!(trends.len(), 1);
 }
 
@@ -263,7 +301,13 @@ fn test_submit_device_reading_unregistered_device_fails() {
     });
 
     // Attempt to submit with an unregistered device should fail
-    let result = client.try_submit_device_reading(&device_id, &patient_id, &unregistered_device, &1672531200, &readings);
+    let result = client.try_submit_device_reading(
+        &device_id,
+        &patient_id,
+        &unregistered_device,
+        &1672531200,
+        &readings,
+    );
     assert_eq!(result, Err(Ok(crate::types::Error::NotFound)));
 }
 
@@ -319,8 +363,12 @@ fn test_calculate_vital_statistics() {
     client.record_vital_signs(&patient_id, &patient_id, &3000, &vitals);
 
     // Test stats calculating heart rate from time 1500
-    let stats =
-        client.calculate_vital_statistics(&patient_id, &patient_id, &Symbol::new(&env, "heart_rate"), &1500);
+    let stats = client.calculate_vital_statistics(
+        &patient_id,
+        &patient_id,
+        &Symbol::new(&env, "heart_rate"),
+        &1500,
+    );
     assert_eq!(stats.count, 2);
     assert_eq!(stats.min_value, 80);
     assert_eq!(stats.max_value, 90);
@@ -329,7 +377,11 @@ fn test_calculate_vital_statistics() {
 
 // ── Threshold evaluation & alert deduplication ───────────────────────────────
 
-fn setup_heart_rate_thresholds(client: &PatientVitalsContractClient, patient_id: &Address, env: &Env) {
+fn setup_heart_rate_thresholds(
+    client: &PatientVitalsContractClient,
+    patient_id: &Address,
+    env: &Env,
+) {
     let provider_id = Address::generate(env);
     client.set_monitoring_parameters(
         patient_id,
@@ -402,7 +454,10 @@ fn test_critical_threshold_severity() {
 
     let alerts = client.get_alerts(&patient_id, &patient_id, &Symbol::new(&env, "heart_rate"));
     assert_eq!(alerts.len(), 1);
-    assert_eq!(alerts.get(0).unwrap().severity, Symbol::new(&env, "critical_hi"));
+    assert_eq!(
+        alerts.get(0).unwrap().severity,
+        Symbol::new(&env, "critical_hi")
+    );
 }
 
 /// A normal reading (within range) must not create any alert.
@@ -462,7 +517,11 @@ fn test_cooldown_suppresses_duplicate_alert() {
     client.record_vital_signs(&patient_id, &patient_id, &t1, &vitals);
 
     let alerts = client.get_alerts(&patient_id, &patient_id, &Symbol::new(&env, "heart_rate"));
-    assert_eq!(alerts.len(), 1, "duplicate alert within cooldown must be suppressed");
+    assert_eq!(
+        alerts.len(),
+        1,
+        "duplicate alert within cooldown must be suppressed"
+    );
 }
 
 /// A breach after the cooldown window has elapsed must produce a second alert.
@@ -493,7 +552,11 @@ fn test_alert_after_cooldown_expires() {
     client.record_vital_signs(&patient_id, &patient_id, &t1, &vitals);
 
     let alerts = client.get_alerts(&patient_id, &patient_id, &Symbol::new(&env, "heart_rate"));
-    assert_eq!(alerts.len(), 2, "new alert must be created after cooldown expires");
+    assert_eq!(
+        alerts.len(),
+        2,
+        "new alert must be created after cooldown expires"
+    );
     assert_eq!(alerts.get(1).unwrap().alert_time, t1);
 }
 
@@ -527,9 +590,9 @@ fn test_deregister_purges_raw_and_agg_windows() {
     // RAW_WINDOW_SECONDS = 3600 (1 h), AGG_WINDOW_SECONDS = 86400 (24 h).
     // Write into two distinct raw windows: t=0 (raw_idx=0) and t=7200 (raw_idx=2).
     let t0: u64 = 0;
-    let t1: u64 = 7_200;   // 2 h later → different raw window
-    // Write into two distinct agg windows: t=0 (agg_idx=0) and t=90000 (agg_idx=1).
-    let t2: u64 = 90_000;  // ~25 h → second agg window
+    let t1: u64 = 7_200; // 2 h later → different raw window
+                         // Write into two distinct agg windows: t=0 (agg_idx=0) and t=90000 (agg_idx=1).
+    let t2: u64 = 90_000; // ~25 h → second agg window
 
     client.record_vital_signs(&patient_id, &recorder, &t0, &vitals);
     client.record_vital_signs(&patient_id, &recorder, &t1, &vitals);
@@ -537,13 +600,25 @@ fn test_deregister_purges_raw_and_agg_windows() {
 
     // Verify data is present before deregistration.
     let raw0 = client.get_raw_window_page(&patient_id, &0u64, &0u32);
-    assert!(!raw0.readings.is_empty(), "raw window 0 should have readings before deregister");
+    assert!(
+        !raw0.readings.is_empty(),
+        "raw window 0 should have readings before deregister"
+    );
     let raw2 = client.get_raw_window_page(&patient_id, &2u64, &0u32);
-    assert!(!raw2.readings.is_empty(), "raw window 2 should have readings before deregister");
+    assert!(
+        !raw2.readings.is_empty(),
+        "raw window 2 should have readings before deregister"
+    );
     let agg0 = client.get_aggregate_page(&patient_id, &0u64, &0u64, &0u32);
-    assert!(!agg0.aggregates.is_empty(), "agg window 0 should have an entry before deregister");
+    assert!(
+        !agg0.aggregates.is_empty(),
+        "agg window 0 should have an entry before deregister"
+    );
     let agg1 = client.get_aggregate_page(&patient_id, &1u64, &1u64, &0u32);
-    assert!(!agg1.aggregates.is_empty(), "agg window 1 should have an entry before deregister");
+    assert!(
+        !agg1.aggregates.is_empty(),
+        "agg window 1 should have an entry before deregister"
+    );
 
     // Deregister.
     client.deregister_patient(&patient_id);
@@ -587,7 +662,6 @@ fn test_deregister_patient_with_no_vitals() {
     // Should not panic even though no data was recorded.
     client.deregister_patient(&patient_id);
 }
-
 
 #[test]
 fn test_deregister_patient_clears_vitals_history() {
@@ -656,11 +730,21 @@ fn test_deregister_patient_clears_alerts() {
         &1_000_000u64,
     );
 
-    assert_eq!(client.get_alerts(&patient_id, &patient_id, &vital_type).len(), 1);
+    assert_eq!(
+        client
+            .get_alerts(&patient_id, &patient_id, &vital_type)
+            .len(),
+        1
+    );
 
     client.deregister_patient(&patient_id);
 
-    assert_eq!(client.get_alerts(&patient_id, &patient_id, &vital_type).len(), 0);
+    assert_eq!(
+        client
+            .get_alerts(&patient_id, &patient_id, &vital_type)
+            .len(),
+        0
+    );
 }
 
 // ── #614: access control for read-only PHI functions ─────────────────────────
@@ -699,7 +783,10 @@ fn test_unauthorized_address_cannot_read_vital_trends() {
         &0,
         &u64::MAX,
     );
-    assert!(result.is_err(), "stranger must not read another patient's vital trends");
+    assert!(
+        result.is_err(),
+        "stranger must not read another patient's vital trends"
+    );
 }
 
 /// An unrelated address must not be able to read another patient's vital statistics.
@@ -733,7 +820,10 @@ fn test_unauthorized_address_cannot_read_vital_statistics() {
         &Symbol::new(&env, "heart_rate"),
         &0,
     );
-    assert!(result.is_err(), "stranger must not read another patient's vital statistics");
+    assert!(
+        result.is_err(),
+        "stranger must not read another patient's vital statistics"
+    );
 }
 
 /// An unrelated address must not be able to read another patient's alerts.
@@ -762,12 +852,11 @@ fn test_unauthorized_address_cannot_read_alerts() {
     };
     client.record_vital_signs(&patient_id, &patient_id, &1_000_000, &vitals);
 
-    let result = client.try_get_alerts(
-        &stranger,
-        &patient_id,
-        &Symbol::new(&env, "heart_rate"),
+    let result = client.try_get_alerts(&stranger, &patient_id, &Symbol::new(&env, "heart_rate"));
+    assert!(
+        result.is_err(),
+        "stranger must not read another patient's alerts"
     );
-    assert!(result.is_err(), "stranger must not read another patient's alerts");
 }
 
 /// An authorized provider (has MonitoringParameters for the patient) CAN read alerts.
@@ -812,7 +901,11 @@ fn test_authorized_provider_can_read_alerts() {
 
     // Provider can read alerts.
     let alerts = client.get_alerts(&provider_id, &patient_id, &Symbol::new(&env, "heart_rate"));
-    assert_eq!(alerts.len(), 1, "authorized provider must be able to read patient alerts");
+    assert_eq!(
+        alerts.len(),
+        1,
+        "authorized provider must be able to read patient alerts"
+    );
 }
 
 // ── #615: trigger_vital_alert authorization ───────────────────────────────────
@@ -837,7 +930,12 @@ fn test_provider_can_trigger_vital_alert() {
         &provider_id,
         &vital_type,
         &Range { min: 60, max: 100 },
-        &AlertThresholds { critical_low: None, low: None, high: None, critical_high: None },
+        &AlertThresholds {
+            critical_low: None,
+            low: None,
+            high: None,
+            critical_high: None,
+        },
         &3600,
     );
 
@@ -853,7 +951,10 @@ fn test_provider_can_trigger_vital_alert() {
 
     let alerts = client.get_alerts(&provider_id, &patient_id, &vital_type);
     assert_eq!(alerts.len(), 1, "provider-triggered alert must be recorded");
-    assert_eq!(alerts.get(0).unwrap().severity, Symbol::new(&env, "critical_hi"));
+    assert_eq!(
+        alerts.get(0).unwrap().severity,
+        Symbol::new(&env, "critical_hi")
+    );
 }
 
 /// An unrelated third party must not be able to trigger an alert for a patient.
@@ -878,7 +979,10 @@ fn test_third_party_cannot_trigger_vital_alert() {
         &Symbol::new(&env, "critical_hi"),
         &2_000_000,
     );
-    assert!(result.is_err(), "third party must not trigger a vital alert");
+    assert!(
+        result.is_err(),
+        "third party must not trigger a vital alert"
+    );
 }
 
 /// A registered monitoring device can trigger an emergency alert on a patient's behalf.
@@ -916,7 +1020,10 @@ fn test_device_can_trigger_vital_alert() {
 
     let alerts = client.get_alerts(&patient_id, &patient_id, &vital_type);
     assert_eq!(alerts.len(), 1, "device-triggered alert must be recorded");
-    assert_eq!(alerts.get(0).unwrap().severity, Symbol::new(&env, "critical_hi"));
+    assert_eq!(
+        alerts.get(0).unwrap().severity,
+        Symbol::new(&env, "critical_hi")
+    );
 }
 
 // ── #728: provider self-appointment requires patient consent ─────────────────
@@ -984,13 +1091,8 @@ fn test_attacker_cannot_self_appoint_as_provider() {
     // the Unauthorized rejection below comes from the application-level
     // is_authorized_provider check, which the failed call above never satisfied.)
     env.mock_all_auths();
-    let trends_result = client.try_get_vital_trends(
-        &attacker,
-        &victim,
-        &vital_type,
-        &0u64,
-        &u64::MAX,
-    );
+    let trends_result =
+        client.try_get_vital_trends(&attacker, &victim, &vital_type, &0u64, &u64::MAX);
     assert!(
         trends_result.is_err(),
         "attacker must remain unable to read the victim's vital trends"
@@ -1022,7 +1124,12 @@ fn test_patient_consent_allows_provider_appointment() {
         &provider_id,
         &vital_type,
         &Range { min: 60, max: 100 },
-        &AlertThresholds { critical_low: None, low: None, high: None, critical_high: None },
+        &AlertThresholds {
+            critical_low: None,
+            low: None,
+            high: None,
+            critical_high: None,
+        },
         &3600,
     );
 
@@ -1053,7 +1160,11 @@ fn test_patient_can_trigger_own_vital_alert() {
     );
 
     let alerts = client.get_alerts(&patient_id, &patient_id, &vital_type);
-    assert_eq!(alerts.len(), 1, "patient must be able to trigger their own alert");
+    assert_eq!(
+        alerts.len(),
+        1,
+        "patient must be able to trigger their own alert"
+    );
 }
 
 #[test]
@@ -1082,7 +1193,10 @@ fn test_issue_1005_record_vital_signs_authorization() {
 
     // 1. Unregistered stranger must fail with Unauthorized
     let stranger_res = client.try_record_vital_signs(&patient_id, &stranger, &1_000_000, &vitals);
-    assert!(stranger_res.is_err(), "unauthorized recorder must be rejected");
+    assert!(
+        stranger_res.is_err(),
+        "unauthorized recorder must be rejected"
+    );
 
     // 2. Patient recording their own vitals succeeds
     let id1 = client.record_vital_signs(&patient_id, &patient_id, &1_000_000, &vitals);
@@ -1094,7 +1208,12 @@ fn test_issue_1005_record_vital_signs_authorization() {
         &provider_id,
         &Symbol::new(&env, "heart_rate"),
         &Range { min: 60, max: 100 },
-        &AlertThresholds { critical_low: None, low: None, high: None, critical_high: None },
+        &AlertThresholds {
+            critical_low: None,
+            low: None,
+            high: None,
+            critical_high: None,
+        },
         &3600,
     );
     let id2 = client.record_vital_signs(&patient_id, &provider_id, &1_001_000, &vitals);
@@ -1128,5 +1247,8 @@ fn test_issue_1005_record_vital_signs_authorization() {
 
     // Reading appears in raw window page (1_003_000 / 3600 = window index 278)
     let raw_window = client.get_raw_window_page(&patient_id, &(1_003_000 / 3600), &0u32);
-    assert!(!raw_window.readings.is_empty(), "device reading must appear in raw window page");
+    assert!(
+        !raw_window.readings.is_empty(),
+        "device reading must appear in raw window page"
+    );
 }

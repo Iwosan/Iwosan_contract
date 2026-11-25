@@ -72,9 +72,11 @@ pub fn extend_critical_ttl<K: soroban_sdk::IntoVal<soroban_sdk::Env, soroban_sdk
     env: &Env,
     key: &K,
 ) {
-    env.storage()
-        .persistent()
-        .extend_ttl(key, critical::LEDGER_THRESHOLD, critical::LEDGER_BUMP_AMOUNT);
+    env.storage().persistent().extend_ttl(
+        key,
+        critical::LEDGER_THRESHOLD,
+        critical::LEDGER_BUMP_AMOUNT,
+    );
 }
 
 /// Helper function to extend TTL for a key using operational retention class
@@ -83,9 +85,11 @@ pub fn extend_operational_ttl<K: soroban_sdk::IntoVal<soroban_sdk::Env, soroban_
     env: &Env,
     key: &K,
 ) {
-    env.storage()
-        .persistent()
-        .extend_ttl(key, operational::LEDGER_THRESHOLD, operational::LEDGER_BUMP_AMOUNT);
+    env.storage().persistent().extend_ttl(
+        key,
+        operational::LEDGER_THRESHOLD,
+        operational::LEDGER_BUMP_AMOUNT,
+    );
 }
 
 /// Helper function to extend TTL for a key using ephemeral retention class
@@ -94,14 +98,18 @@ pub fn extend_ephemeral_ttl<K: soroban_sdk::IntoVal<soroban_sdk::Env, soroban_sd
     env: &Env,
     key: &K,
 ) {
-    env.storage()
-        .persistent()
-        .extend_ttl(key, ephemeral::LEDGER_THRESHOLD, ephemeral::LEDGER_BUMP_AMOUNT);
+    env.storage().persistent().extend_ttl(
+        key,
+        ephemeral::LEDGER_THRESHOLD,
+        ephemeral::LEDGER_BUMP_AMOUNT,
+    );
 }
 
 /// Helper function to conditionally extend TTL if key exists
 #[inline]
-pub fn extend_critical_ttl_if_exists<K: soroban_sdk::IntoVal<soroban_sdk::Env, soroban_sdk::Val>>(
+pub fn extend_critical_ttl_if_exists<
+    K: soroban_sdk::IntoVal<soroban_sdk::Env, soroban_sdk::Val>,
+>(
     env: &Env,
     key: &K,
 ) {
@@ -112,7 +120,9 @@ pub fn extend_critical_ttl_if_exists<K: soroban_sdk::IntoVal<soroban_sdk::Env, s
 
 /// Helper function to conditionally extend TTL if key exists (operational)
 #[inline]
-pub fn extend_operational_ttl_if_exists<K: soroban_sdk::IntoVal<soroban_sdk::Env, soroban_sdk::Val>>(
+pub fn extend_operational_ttl_if_exists<
+    K: soroban_sdk::IntoVal<soroban_sdk::Env, soroban_sdk::Val>,
+>(
     env: &Env,
     key: &K,
 ) {
@@ -123,7 +133,9 @@ pub fn extend_operational_ttl_if_exists<K: soroban_sdk::IntoVal<soroban_sdk::Env
 
 /// Helper function to conditionally extend TTL if key exists (ephemeral)
 #[inline]
-pub fn extend_ephemeral_ttl_if_exists<K: soroban_sdk::IntoVal<soroban_sdk::Env, soroban_sdk::Val>>(
+pub fn extend_ephemeral_ttl_if_exists<
+    K: soroban_sdk::IntoVal<soroban_sdk::Env, soroban_sdk::Val>,
+>(
     env: &Env,
     key: &K,
 ) {
@@ -135,7 +147,11 @@ pub fn extend_ephemeral_ttl_if_exists<K: soroban_sdk::IntoVal<soroban_sdk::Env, 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use soroban_sdk::{contract, contractimpl, testutils::{storage::Persistent as _, Ledger}, Bytes, Env};
+    use soroban_sdk::{
+        contract, contractimpl,
+        testutils::{storage::Persistent as _, Ledger},
+        Bytes, Env,
+    };
 
     #[contract]
     struct TtlTestContract;
@@ -256,7 +272,11 @@ mod tests {
     fn test_bulk_ttl_extension_under_load() {
         let env = Env::default();
         let cid = env.register(TtlTestContract, ());
-        for class in [RetentionClass::Critical, RetentionClass::Operational, RetentionClass::Ephemeral] {
+        for class in [
+            RetentionClass::Critical,
+            RetentionClass::Operational,
+            RetentionClass::Ephemeral,
+        ] {
             env.as_contract(&cid, || {
                 for seed in 0u8..50u8 {
                     let key = make_key(&env, seed);
@@ -282,7 +302,11 @@ mod tests {
         // and that entries remain alive immediately after extension.
         let env = Env::default();
         let cid = env.register(TtlTestContract, ());
-        for class in [RetentionClass::Critical, RetentionClass::Operational, RetentionClass::Ephemeral] {
+        for class in [
+            RetentionClass::Critical,
+            RetentionClass::Operational,
+            RetentionClass::Ephemeral,
+        ] {
             env.as_contract(&cid, || {
                 for seed in 0u8..100u8 {
                     let key = make_key(&env, seed);
@@ -296,7 +320,9 @@ mod tests {
                     assert!(
                         ttl >= class.min_ttl_ledgers() as u32,
                         "seed {} class TTL {} < expected min {}",
-                        seed, ttl, class.min_ttl_ledgers()
+                        seed,
+                        ttl,
+                        class.min_ttl_ledgers()
                     );
                 }
             });

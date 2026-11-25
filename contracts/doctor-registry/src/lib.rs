@@ -23,7 +23,9 @@
 //! Soroban's secure storage mechanisms.
 
 use shared::privacy::validate_nonzero_address;
-use soroban_sdk::{contract, contractimpl, contracterror, contracttype, symbol_short, Address, Env, String};
+use soroban_sdk::{
+    contract, contracterror, contractimpl, contracttype, symbol_short, Address, Env, String,
+};
 
 /// Error codes for doctor registry operations
 #[contracterror]
@@ -192,8 +194,10 @@ impl DoctorRegistry {
         doctor_profile.revoked_at = Some(env.ledger().timestamp());
         env.storage().persistent().set(&key, &doctor_profile);
 
-        env.events()
-            .publish((symbol_short!("deact_doc"), wallet), symbol_short!("success"));
+        env.events().publish(
+            (symbol_short!("deact_doc"), wallet),
+            symbol_short!("success"),
+        );
 
         Ok(())
     }
@@ -224,8 +228,10 @@ impl DoctorRegistry {
         doctor_profile.revoked_at = None;
         env.storage().persistent().set(&key, &doctor_profile);
 
-        env.events()
-            .publish((symbol_short!("react_doc"), wallet), symbol_short!("success"));
+        env.events().publish(
+            (symbol_short!("react_doc"), wallet),
+            symbol_short!("success"),
+        );
 
         Ok(())
     }
@@ -239,7 +245,11 @@ impl DoctorRegistry {
             return false;
         }
         let key = DataKey::Doctor(wallet);
-        if let Some(profile) = env.storage().persistent().get::<DataKey, DoctorProfileData>(&key) {
+        if let Some(profile) = env
+            .storage()
+            .persistent()
+            .get::<DataKey, DoctorProfileData>(&key)
+        {
             profile.active
         } else {
             false

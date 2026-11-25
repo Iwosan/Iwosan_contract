@@ -288,7 +288,10 @@ fn test_deactivate_and_reactivate_doctor_lifecycle() {
 
     let deactivated_profile = client.get_doctor_profile(&doctor_wallet);
     assert_eq!(deactivated_profile.active, false);
-    assert_eq!(deactivated_profile.revoked_at, Some(env.ledger().timestamp()));
+    assert_eq!(
+        deactivated_profile.revoked_at,
+        Some(env.ledger().timestamp())
+    );
     assert_eq!(client.is_active(&doctor_wallet), false);
 
     // Reactivate doctor profile
@@ -351,4 +354,3 @@ fn test_deactivate_and_reactivate_nonexistent_profile_fails() {
 
     assert_eq!(client.is_active(&unknown_doctor), false);
 }
-

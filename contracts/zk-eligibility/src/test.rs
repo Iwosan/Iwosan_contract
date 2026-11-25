@@ -46,8 +46,8 @@ fn expiry_scalar(env: &Env, ts: u64) -> BytesN<32> {
     raw[3] = (ts >> 32) as u8;
     raw[4] = (ts >> 24) as u8;
     raw[5] = (ts >> 16) as u8;
-    raw[6] = (ts >>  8) as u8;
-    raw[7] =  ts        as u8;
+    raw[6] = (ts >> 8) as u8;
+    raw[7] = ts as u8;
     BytesN::from_array(env, &raw)
 }
 
@@ -88,7 +88,7 @@ fn commitment_tag(env: &Env, vk_bytes: &Bytes, inputs: &Vec<BytesN<32>>) -> [u8;
 fn make_proof(env: &Env, vk_bytes: &Bytes, inputs: &Vec<BytesN<32>>) -> Bytes {
     let tag = commitment_tag(env, vk_bytes, inputs);
     let raw: [u8; 9] = [
-        0xDE, 0xAD, 0xBE, 0xEF, 0x00,  // arbitrary payload
+        0xDE, 0xAD, 0xBE, 0xEF, 0x00, // arbitrary payload
         tag[0], tag[1], tag[2], tag[3], // 4-byte commitment tag
     ];
     Bytes::from_slice(env, &raw)
@@ -117,7 +117,11 @@ fn migration_proof(env: &Env, new_vk_bytes: &Bytes, old_version: u32, new_versio
 fn valid_bundle(env: &Env, vk_bytes: &Bytes, schema_version: u32) -> ProofBundle {
     let inputs = inputs_with_expiry(env, FUTURE_EXPIRY);
     let proof = make_proof(env, vk_bytes, &inputs);
-    ProofBundle { proof, public_inputs: inputs, schema_version }
+    ProofBundle {
+        proof,
+        public_inputs: inputs,
+        schema_version,
+    }
 }
 
 // ── constructor ───────────────────────────────────────────────────────────────
@@ -275,7 +279,11 @@ fn test_expired_proof_returns_error() {
     let past_expiry = BASE_TIMESTAMP - 1;
     let inputs = inputs_with_expiry(&env, past_expiry);
     let proof = make_proof(&env, &vk_bytes, &inputs);
-    let bad_bundle = ProofBundle { proof, public_inputs: inputs, schema_version: 1 };
+    let bad_bundle = ProofBundle {
+        proof,
+        public_inputs: inputs,
+        schema_version: 1,
+    };
 
     let err = client
         .try_verify_eligibility(&subject, &bad_bundle)
@@ -294,8 +302,15 @@ fn test_missing_expiry_input_returns_error() {
     // Empty public_inputs: no expiry scalar at index 0.
     let empty: Vec<BytesN<32>> = Vec::new(&env);
     // Proof length ≥ 5 so it passes the structural check, but expiry check fires first.
-    let proof = Bytes::from_slice(&env, &[0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09]);
-    let bad_bundle = ProofBundle { proof, public_inputs: empty, schema_version: 1 };
+    let proof = Bytes::from_slice(
+        &env,
+        &[0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09],
+    );
+    let bad_bundle = ProofBundle {
+        proof,
+        public_inputs: empty,
+        schema_version: 1,
+    };
 
     let err = client
         .try_verify_eligibility(&subject, &bad_bundle)

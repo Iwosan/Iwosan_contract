@@ -710,10 +710,8 @@ impl InsurerRegistry {
         insurer.credential.revoked_by = Some(admin.clone());
         env.storage().persistent().set(&key, &insurer);
 
-        env.events().publish(
-            (symbol_short!("cred_rev"), wallet, admin),
-            reason,
-        );
+        env.events()
+            .publish((symbol_short!("cred_rev"), wallet, admin), reason);
         Ok(())
     }
 

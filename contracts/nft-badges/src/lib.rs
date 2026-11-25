@@ -26,21 +26,20 @@
 //! Badge storage enforces non-transferability via smart contract logic.
 
 use soroban_sdk::{
-    contract, contracterror, contractimpl, contracttype, symbol_short,
-    Address, Env, String, Vec,
+    contract, contracterror, contractimpl, contracttype, symbol_short, Address, Env, String, Vec,
 };
 
 #[contracterror]
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 #[repr(u32)]
 pub enum Error {
-    NotInitialized    = 1,
-    Unauthorized      = 3,
-    BadgeNotFound     = 4,
+    NotInitialized = 1,
+    Unauthorized = 3,
+    BadgeNotFound = 4,
     /// Soulbound tokens may never be transferred.
-    Soulbound         = 5,
-    AlreadyMinted     = 6,
-    AlreadyRevoked    = 7,
+    Soulbound = 5,
+    AlreadyMinted = 6,
+    AlreadyRevoked = 7,
 }
 
 #[contracttype]
@@ -54,13 +53,13 @@ pub enum DataKey {
 #[contracttype]
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct BadgeMetadata {
-    pub id:          u64,
-    pub recipient:   Address,
-    pub badge_type:  String,   // e.g. "completion", "honor_roll", "attendance"
-    pub achievement: String,   // human-readable title
-    pub issued_at:   u64,
-    pub metadata_uri: String,  // IPFS / off-chain URI
-    pub revoked:      bool,
+    pub id: u64,
+    pub recipient: Address,
+    pub badge_type: String,  // e.g. "completion", "honor_roll", "attendance"
+    pub achievement: String, // human-readable title
+    pub issued_at: u64,
+    pub metadata_uri: String, // IPFS / off-chain URI
+    pub revoked: bool,
     pub revoked_reason: Option<String>,
 }
 
@@ -79,27 +78,33 @@ impl NftBadgesContract {
     /// Mint a soulbound badge to `recipient`.
     /// Only the contract admin may call this.
     pub fn mint(
-        env:          Env,
-        admin:        Address,
-        recipient:    Address,
-        badge_type:   String,
-        achievement:  String,
+        env: Env,
+        admin: Address,
+        recipient: Address,
+        badge_type: String,
+        achievement: String,
         metadata_uri: String,
     ) -> Result<u64, Error> {
         admin.require_auth();
-        let stored_admin: Address = env.storage().instance()
+        let stored_admin: Address = env
+            .storage()
+            .instance()
             .get(&DataKey::Admin)
             .ok_or(Error::NotInitialized)?;
         if admin != stored_admin {
             return Err(Error::Unauthorized);
         }
 
-        let mut badges: Vec<u64> = env.storage().persistent()
+        let mut badges: Vec<u64> = env
+            .storage()
+            .persistent()
             .get(&DataKey::OwnerBadges(recipient.clone()))
             .unwrap_or_else(|| Vec::new(&env));
 
         for existing_id in badges.iter() {
-            if let Some(existing) = env.storage().persistent()
+            if let Some(existing) = env
+                .storage()
+                .persistent()
                 .get::<_, BadgeMetadata>(&DataKey::Badge(existing_id))
             {
                 if existing.badge_type == badge_type && !existing.revoked {
@@ -108,32 +113,29 @@ impl NftBadgesContract {
             }
         }
 
-        let id: u64 = env.storage().instance()
-            .get(&DataKey::NextId)
-            .unwrap_or(1);
+        let id: u64 = env.storage().instance().get(&DataKey::NextId).unwrap_or(1);
 
         let badge = BadgeMetadata {
             id,
-            recipient:    recipient.clone(),
+            recipient: recipient.clone(),
             badge_type,
             achievement,
-            issued_at:    env.ledger().timestamp(),
+            issued_at: env.ledger().timestamp(),
             metadata_uri,
-            revoked:      false,
+            revoked: false,
             revoked_reason: None,
         };
 
         env.storage().persistent().set(&DataKey::Badge(id), &badge);
 
         badges.push_back(id);
-        env.storage().persistent().set(&DataKey::OwnerBadges(recipient.clone()), &badges);
+        env.storage()
+            .persistent()
+            .set(&DataKey::OwnerBadges(recipient.clone()), &badges);
 
         env.storage().instance().set(&DataKey::NextId, &(id + 1));
 
-        env.events().publish(
-            (symbol_short!("MINT"), recipient),
-            id,
-        );
+        env.events().publish((symbol_short!("MINT"), recipient), id);
         Ok(id)
     }
 
@@ -146,14 +148,18 @@ impl NftBadgesContract {
     /// The badge is flagged as revoked (with a reason) rather than deleted.
     pub fn revoke(env: Env, admin: Address, badge_id: u64, reason: String) -> Result<(), Error> {
         admin.require_auth();
-        let stored_admin: Address = env.storage().instance()
+        let stored_admin: Address = env
+            .storage()
+            .instance()
             .get(&DataKey::Admin)
             .ok_or(Error::NotInitialized)?;
         if admin != stored_admin {
             return Err(Error::Unauthorized);
         }
 
-        let mut badge: BadgeMetadata = env.storage().persistent()
+        let mut badge: BadgeMetadata = env
+            .storage()
+            .persistent()
             .get(&DataKey::Badge(badge_id))
             .ok_or(Error::BadgeNotFound)?;
 
@@ -163,29 +169,32 @@ impl NftBadgesContract {
 
         badge.revoked = true;
         badge.revoked_reason = Some(reason);
-        env.storage().persistent().set(&DataKey::Badge(badge_id), &badge);
+        env.storage()
+            .persistent()
+            .set(&DataKey::Badge(badge_id), &badge);
 
-        env.events().publish(
-            (symbol_short!("REVOKE"), badge.recipient),
-            badge_id,
-        );
+        env.events()
+            .publish((symbol_short!("REVOKE"), badge.recipient), badge_id);
         Ok(())
     }
 
     pub fn get_badge(env: Env, id: u64) -> Result<BadgeMetadata, Error> {
-        env.storage().persistent()
+        env.storage()
+            .persistent()
             .get(&DataKey::Badge(id))
             .ok_or(Error::BadgeNotFound)
     }
 
     pub fn badges_of(env: Env, owner: Address) -> Vec<u64> {
-        env.storage().persistent()
+        env.storage()
+            .persistent()
             .get(&DataKey::OwnerBadges(owner))
             .unwrap_or_else(|| Vec::new(&env))
     }
 
     pub fn get_admin(env: Env) -> Result<Address, Error> {
-        env.storage().instance()
+        env.storage()
+            .instance()
             .get(&DataKey::Admin)
             .ok_or(Error::NotInitialized)
     }

@@ -18,11 +18,7 @@ fn test_constructor_stores_admin_and_zk_contract() {
     let (env, client, admin, zk_contract) = setup();
 
     env.as_contract(&client.address, || {
-        let stored_admin: Address = env
-            .storage()
-            .persistent()
-            .get(&DataKey::Admin)
-            .unwrap();
+        let stored_admin: Address = env.storage().persistent().get(&DataKey::Admin).unwrap();
         let stored_zk: Address = env
             .storage()
             .persistent()

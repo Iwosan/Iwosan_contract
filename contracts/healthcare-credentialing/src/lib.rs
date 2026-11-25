@@ -244,7 +244,11 @@ impl HealthcareCredentialingSystem {
     }
 
     /// Register an address as an authorized credential verifier. Admin only.
-    pub fn add_authorized_verifier(env: Env, admin: Address, verifier: Address) -> Result<(), Error> {
+    pub fn add_authorized_verifier(
+        env: Env,
+        admin: Address,
+        verifier: Address,
+    ) -> Result<(), Error> {
         admin.require_auth();
         require_admin(&env, &admin)?;
         env.storage()
@@ -254,7 +258,11 @@ impl HealthcareCredentialingSystem {
     }
 
     /// Revoke an address's authorized-verifier status. Admin only.
-    pub fn remove_authorized_verifier(env: Env, admin: Address, verifier: Address) -> Result<(), Error> {
+    pub fn remove_authorized_verifier(
+        env: Env,
+        admin: Address,
+        verifier: Address,
+    ) -> Result<(), Error> {
         admin.require_auth();
         require_admin(&env, &admin)?;
         env.storage()
@@ -959,13 +967,13 @@ impl HealthcareCredentialingSystem {
         }
 
         // Check if there's already an active recredentialing case
-        if let Some(active_case_id) = env
-            .storage()
-            .persistent()
-            .get::<_, u64>(&DataKey::ActiveRecredentialingCases(
-                provider_id.clone(),
-                facility_id.clone(),
-            ))
+        if let Some(active_case_id) =
+            env.storage()
+                .persistent()
+                .get::<_, u64>(&DataKey::ActiveRecredentialingCases(
+                    provider_id.clone(),
+                    facility_id.clone(),
+                ))
         {
             if let Ok(case) = get_case(&env, active_case_id) {
                 if case.status != CredentialingStatus::Denied
@@ -1664,13 +1672,8 @@ mod test {
 
         let actions = Vec::new(&env);
         let monitoring = Vec::new(&env);
-        let res = client.try_reinstate_privileges(
-            &provider,
-            &facility,
-            &outsider,
-            &actions,
-            &monitoring,
-        );
+        let res =
+            client.try_reinstate_privileges(&provider, &facility, &outsider, &actions, &monitoring);
         assert_eq!(res, Err(Ok(Error::NotAuthorized)));
     }
 
