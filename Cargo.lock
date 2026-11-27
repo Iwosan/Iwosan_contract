@@ -1206,6 +1206,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "micro-insurance-pool"
+version = "0.1.0"
+dependencies = [
+ "soroban-sdk",
+]
+
+[[package]]
 name = "multisig-governance"
 version = "0.0.0"
 dependencies = [

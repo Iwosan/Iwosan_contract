@@ -51,6 +51,7 @@ members = [
   "contracts/credential-issuer-registry",
   "contracts/health-savings-pool",
   "contracts/treatment-crowdfund",
+  "contracts/micro-insurance-pool",
 ]
 exclude = ["contracts/patient-registry/benches"]
 
