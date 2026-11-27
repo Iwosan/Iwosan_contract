@@ -50,6 +50,7 @@ members = [
   "contracts/drug-batch-registry",
   "contracts/credential-issuer-registry",
   "contracts/health-savings-pool",
+  "contracts/treatment-crowdfund",
 ]
 exclude = ["contracts/patient-registry/benches"]
 
