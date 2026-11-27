@@ -19,6 +19,7 @@ Iwosan is a healthcare marketplace (medical equipment sale and rental, orthodox 
 | Fake drugs and unlicensed practitioners | On-chain **drug batch traceability** and **verifiable licence credentials** |
 | Care is often unaffordable | Soroban **savings pools (ajo/esusu)**, **micro-insurance**, **crowdfunding** and **vouchers** |
 | Prices need to show in local currency | On-chain **price oracle** (e.g. Reflector) |
+| Untrained sellers and staff put patients at risk | **Training courses** with quizzes and **on-chain certificates** that buyers and contracts can check |
 
 ## Features
 
@@ -50,6 +51,12 @@ Iwosan is a healthcare marketplace (medical equipment sale and rental, orthodox 
 - Prices in NGN, USDC or XLM from an on-chain oracle.
 - Marketplace UI in English, Yoruba, Hausa and Igbo.
 
+### 6. Training of personnel
+- **Three training tracks.** Selling and renting medical equipment safely; selling orthodox and native drugs safely (checking NAFDAC numbers and expiry, storage, prescription-only medicines, reporting side effects); and first aid for common diseases and emergencies (bleeding, burns, choking, dehydration from diarrhoea or cholera, malaria fever danger signs, seizures, snakebite and asthma attacks).
+- **Courses and quizzes.** Each course has short lessons and a quiz; passing earns a certificate that expires and is renewed with a refresher course.
+- **Certificates on Stellar.** Accredited trainers (hospitals, nursing schools, pharmacist associations, first-aid instructors) issue certificates through the `training-certification` contract, so anyone can verify them.
+- **Safer marketplace.** Drug and equipment sellers can be required to hold a sales certificate, and clinics can hire personnel with a valid first-aid certificate.
+
 ## Suggested order
 1. Path payments, sponsored accounts and passkey login: payments for everyone, no XLM, no seed phrases.
 2. Drug batch traceability and recalls: directly tackles counterfeit drugs.
@@ -78,3 +85,8 @@ Iwosan is a healthcare marketplace (medical equipment sale and rental, orthodox 
 | Treatment crowdfunding | [#9](https://github.com/Iwosan/Iwosan_contract/issues/9) | n/a | [#8](https://github.com/Iwosan/Iwosan_web/issues/8) |
 | Medical vouchers | [#10](https://github.com/Iwosan/Iwosan_contract/issues/10) | n/a | n/a |
 | Oracle prices and local languages | n/a | [#10](https://github.com/Iwosan/Iwosan_api/issues/10) | [#11](https://github.com/Iwosan/Iwosan_web/issues/11) |
+| Training courses, quizzes and certificates | [#48](https://github.com/Iwosan/Iwosan_contract/issues/48) | [#50](https://github.com/Iwosan/Iwosan_api/issues/50) | [#42](https://github.com/Iwosan/Iwosan_web/issues/42) |
+| Training required to sell or be hired | [#49](https://github.com/Iwosan/Iwosan_contract/issues/49), [#50](https://github.com/Iwosan/Iwosan_contract/issues/50) | [#52](https://github.com/Iwosan/Iwosan_api/issues/52) | [#45](https://github.com/Iwosan/Iwosan_web/issues/45) |
+| Trainer accreditation and course management | [#51](https://github.com/Iwosan/Iwosan_contract/issues/51) | [#53](https://github.com/Iwosan/Iwosan_api/issues/53) | [#44](https://github.com/Iwosan/Iwosan_web/issues/44) |
+| Certificate renewal and reminders | [#52](https://github.com/Iwosan/Iwosan_contract/issues/52) | [#54](https://github.com/Iwosan/Iwosan_api/issues/54) | [#43](https://github.com/Iwosan/Iwosan_web/issues/43) |
+| Clinically reviewed, local-language content | n/a | [#51](https://github.com/Iwosan/Iwosan_api/issues/51) | [#46](https://github.com/Iwosan/Iwosan_web/issues/46) |

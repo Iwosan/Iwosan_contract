@@ -27,6 +27,7 @@ env:
     -p health-savings-pool
     -p treatment-crowdfund
     -p micro-insurance-pool
+    -p training-certification
     -p healthcare-credentialing
     -p hospital-discharge-management
     -p insurer-registry
@@ -51,6 +52,7 @@ env:
     -p health-savings-pool
     -p treatment-crowdfund
     -p micro-insurance-pool
+    -p training-certification
     -p healthcare-credentialing
     -p hospital-discharge-management
     -p insurer-registry
@@ -72,6 +74,7 @@ env:
     -p health-savings-pool
     -p treatment-crowdfund
     -p micro-insurance-pool
+    -p training-certification
     -p iwosan-marketplace
 
 jobs:
