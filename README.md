@@ -7,6 +7,7 @@ Soroban smart contracts for Iwosan.
 - **Buy, sell and rent medical equipment**: wheelchairs, oxygen concentrators, hospital beds, diagnostic devices.
 - **Buy orthodox and native drugs**: pharmaceutical drugs and traditional/herbal medicine, each listed with its regulatory number (e.g. NAFDAC).
 - **Hire medical personnel**: nurses, doctors, lab scientists and caregivers, by the day or shift, with licences verified.
+- **Train personnel**: short courses with a quiz and a certificate in selling medical equipment, selling orthodox and native drugs safely, and first aid for common diseases and emergencies.
 
 Payments are held in a Soroban escrow contract and released to the seller only when the buyer confirms delivery or service. Disputes are resolved by the Iwosan verification desk.
 
@@ -20,6 +21,7 @@ Payments are held in a Soroban escrow contract and released to the seller only w
 | Hard to find vetted medical staff quickly | Personnel listings are hire-only and need a verified practising licence |
 | Paying strangers upfront is risky | Stellar escrow: funds release only on confirmation, refund otherwise |
 | Slow, costly cross-border payment | Settlement in USDC/XLM on Stellar in seconds, at low fees |
+| Sellers and staff without training put patients at risk | Training courses and expiring certificates in equipment sales, drug sales and first aid, recorded on Stellar |
 
 The existing clinical modules (records, appointments, pharmacy, lab, telemedicine) remain and support the marketplace.
 
@@ -39,6 +41,9 @@ Planned contracts (full plan in [docs/STELLAR_ROADMAP.md](docs/STELLAR_ROADMAP.m
 | `micro-insurance-pool` | Small premiums; claims paid to verified providers | [#8](https://github.com/Iwosan/Iwosan_contract/issues/8) |
 | `treatment-crowdfund` | Donations paid only to the hospital | [#9](https://github.com/Iwosan/Iwosan_contract/issues/9) |
 | `medical-voucher` | Funds spendable only at verified sellers | [#10](https://github.com/Iwosan/Iwosan_contract/issues/10) |
+| `training-certification` | Accredited trainers, courses and expiring certificates in equipment sales, drug sales and first aid | [#48](https://github.com/Iwosan/Iwosan_contract/issues/48) |
+| `iwosan-marketplace` training checks | Drug and equipment sellers need a sales certificate; hires can require first aid | [#49](https://github.com/Iwosan/Iwosan_contract/issues/49), [#50](https://github.com/Iwosan/Iwosan_contract/issues/50) |
+| Trainer accreditation and renewals | Governance-approved trainers; refresher courses renew certificates | [#51](https://github.com/Iwosan/Iwosan_contract/issues/51), [#52](https://github.com/Iwosan/Iwosan_contract/issues/52) |
 
 ## Architecture
 
