@@ -26,6 +26,7 @@ env:
     -p hai-tracking
     -p health-savings-pool
     -p treatment-crowdfund
+    -p micro-insurance-pool
     -p healthcare-credentialing
     -p hospital-discharge-management
     -p insurer-registry
@@ -49,6 +50,7 @@ env:
     -p hai-tracking
     -p health-savings-pool
     -p treatment-crowdfund
+    -p micro-insurance-pool
     -p healthcare-credentialing
     -p hospital-discharge-management
     -p insurer-registry
@@ -69,6 +71,7 @@ env:
     -p drug-batch-registry
     -p health-savings-pool
     -p treatment-crowdfund
+    -p micro-insurance-pool
     -p iwosan-marketplace
 
 jobs:
